@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Projects – Cognizant Project Health</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    @charset "utf-8";
+    body {
+      -webkit-font-smoothing: antialiased;
+      font-size: 16px;
+      background: #f4f5f8;
+      overflow-x: hidden;
+    }
+
+    /* ── Cognizant Moment design tokens ────────────────────────────── */
+    :root {
+      --primary:         #000048;
+      --accent:          #7373D8;
+      --accent2:         #06C7CC;
+      --accent2-dark:    #058f93;
+      --grey-very-light: #f4f5f8;
+      --grey-light:      #e0e2eb;
+      --grey-dark:       #6b7280;
+      --grey-very-dark:  #374151;
+      --link-color:      #2f78c4;
+    }
+
+    /* ── Navbar ────────────────────────────────────────────────────── */
+    .cog-navbar {
+      background: var(--primary);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .cog-brand {
+      font-size: 1rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.3px;
+      text-decoration: none;
+    }
+    .cog-brand:hover { color: rgba(255,255,255,0.85); }
+    .alpha-pill {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.5px;
+      background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9);
+      padding: 2px 8px; border-radius: 50px; margin-left: 8px;
+      text-transform: uppercase;
+    }
+    .nav-back {
+      color: rgba(255,255,255,0.65);
+      font-size: 0.82rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s;
+    }
+    .nav-back:hover { color: rgba(255,255,255,0.95); }
+
+    /* ── Page header ───────────────────────────────────────────────── */
+    .page-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #2a2a7a 55%, #3a3a9a 100%);
+      color: white;
+      padding: 2.5rem 0 2rem;
+    }
+    .avatar-hero {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.35rem; color: white;
+      flex-shrink: 0;
+      border: 3px solid rgba(255,255,255,0.3);
+    }
+
+    /* ── Check-in card ─────────────────────────────────────────────── */
+    .checkin-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,72,0.09);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .checkin-card h6 {
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 0.1rem;
+    }
+
+    /* ── Feeling buttons ───────────────────────────────────────────── */
+    .feel-btn {
+      flex: 1;
+      border-radius: 14px;
+      border: 2px solid var(--grey-light);
+      background: var(--grey-very-light);
+      padding: 0.85rem 0.5rem 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--grey-very-dark);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .feel-btn .feel-emoji { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+    .feel-btn:hover { border-color: var(--grey-dark); background: white; transform: translateY(-1px); }
+    .feel-btn.feel-good      { border-color: #2DB81F; background: #e8f8e6; color: #1a6e12; }
+    .feel-btn.feel-okay      { border-color: #D4A017; background: #fdf5dc; color: #7a5800; }
+    .feel-btn.feel-struggling { border-color: #B81F2D; background: #fce8ea; color: #7a1219; }
+
+    /* ── Project assignment card ───────────────────────────────────── */
+    .project-card {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 1px 6px rgba(0,0,72,0.07);
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      border-left: 4px solid transparent;
+      transition: box-shadow 0.15s;
+    }
+    .project-card:hover { box-shadow: 0 3px 12px rgba(0,0,72,0.12); }
+    .project-card.status-on-track   { border-left-color: #2DB81F; }
+    .project-card.status-at-risk    { border-left-color: #D4A017; }
+    .project-card.status-critical   { border-left-color: #B81F2D; }
+
+    /* ── History timeline ─────────────────────────────────────────── */
+    .history-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .history-row {
+      display: flex; align-items: flex-start; gap: 0.85rem;
+      padding: 0.75rem 1rem; border-radius: 12px;
+      background: var(--grey-very-light);
+      border: 1px solid var(--grey-light);
+    }
+    .history-emoji {
+      font-size: 1.4rem; flex-shrink: 0; line-height: 1;
+    }
+    .history-meta { font-size: 0.78rem; color: var(--grey-dark); }
+    .history-note { font-size: 0.85rem; color: var(--grey-very-dark); margin-top: 2px; }
+
+    /* ── Status badge (read-only) ──────────────────────────────────── */
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      display: inline-block; margin-right: 5px;
+    }
+    .status-label-sm {
+      font-size: 0.72rem; font-weight: 600; border-radius: 50px;
+      padding: 2px 10px;
+    }
+
+    /* ── Empty state ───────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--grey-dark);
+    }
+    .empty-state .empty-icon { font-size: 3rem; opacity: 0.5; margin-bottom: 0.75rem; }
+
+    /* ── Toast ─────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
+      background: var(--primary); color: white;
+      padding: 0.75rem 1.25rem; border-radius: 50px;
+      font-size: 0.85rem; font-weight: 600;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── Section headers ───────────────────────────────────────────── */
+    .section-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--grey-dark); margin-bottom: 0.85rem;
+    }
+
+    /* ── Persona picker ────────────────────────────────────────────── */
+    .persona-btn {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1.1rem; border-radius: 12px;
+      border: 2px solid var(--grey-light); background: white;
+      cursor: pointer; transition: all 0.15s; width: 100%;
+      text-align: left;
+    }
+    .persona-btn:hover { border-color: var(--accent); background: #f5f5ff; }
+    .persona-btn.active { border-color: var(--primary); background: #f0f0ff; }
+    .persona-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.82rem; color: white;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 576px) {
+      .page-header { padding: 1.5rem 0 1.25rem; }
+      .avatar-hero { width: 52px; height: 52px; font-size: 1.1rem; }
+      .checkin-card { padding: 1.1rem; }
+      .feel-btn .feel-emoji { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="cog-navbar">
+    <div class="d-flex align-items-center">
+      <a href="index.html" class="cog-brand">Cognizant ProjectTracker</a>
+      <span class="alpha-pill">Alpha</span>
+    </div>
+    <a href="index.html" class="nav-back d-none d-sm-flex">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Manager view
+    </a>
+  </nav>
+
+  <!-- Page will render here based on state -->
+  <div id="app"></div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ── Design tokens ────────────────────────────────────────────────
+    const STATUS_COLOR = { "on-track": "#2DB81F", "at-risk": "#D4A017", "critical": "#B81F2D" };
+    const STATUS_BG    = { "on-track": "#e8f8e6", "at-risk": "#fdf5dc", "critical": "#fce8ea" };
+    const STATUS_TEXT  = { "on-track": "#1a6e12", "at-risk": "#7a5800", "critical": "#7a1219" };
+    const STATUS_LABEL = { "on-track": "On Track",  "at-risk": "At Risk",  "critical": "Critical" };
+
+    const CI_EMOJI = { good: "😊", okay: "😐", struggling: "😟" };
+    const CI_LABEL = { good: "Good", okay: "Okay", struggling: "Struggling" };
+    const CI_COLOR = { good: "#2DB81F", okay: "#D4A017", struggling: "#B81F2D" };
+    const CI_BG    = { good: "#e8f8e6", okay: "#fdf5dc", struggling: "#fce8ea" };
+    const CI_TEXT  = { good: "#1a6e12", okay: "#7a5800", struggling: "#7a1219" };
+
+    const AVATAR_PALETTE = [
+      "#2f78c4","#7373D8","#06C7CC","#2DB81F","#D4A017","#B81F2D","#000048","#058f93"
+    ];
+
+    function initials(name) {
+      return name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+    }
+    function avatarColor(name) {
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % AVATAR_PALETTE.length;
+      return AVATAR_PALETTE[h];
+    }
+    function formatDate(iso) {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    }
+    function relativeDate(iso) {
+      if (!iso) return "—";
+      const diff = Math.floor((Date.now() - new Date(iso)) / 86400000);
+      if (diff === 0) return "today";
+      if (diff === 1) return "yesterday";
+      if (diff < 7)  return `${diff} days ago`;
+      if (diff < 14) return "last week";
+      if (diff < 30) return `${Math.floor(diff/7)} weeks ago`;
+      return formatDate(iso);
+    }
+    function overallStatus(item) {
+      const rank = { "on-track": 0, "at-risk": 1, "critical": 2 };
+      return ["delivery","morale","satisfaction"].reduce((worst, d) =>
+        rank[item[d]] > rank[worst] ? item[d] : worst, "on-track");
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2800);
+    }
+
+    // ── Shared localStorage (same key as index.html) ─────────────────
+    const STORE_KEY = "cpt_data";
+
+    // Default data (mirrors index.html defaults — loaded if no localStorage)
+    let projects = [
+      {
+        id: 1, name: "Kyndryl Account Refresh", lead: "Sarah Mitchell",
+        delivery: "on-track", morale: "at-risk", satisfaction: "on-track",
+        updated: "2026-04-14",
+        people: [
+          { name: "Sarah Mitchell",  role: "Lead Designer" },
+          { name: "James Okafor",    role: "UX Designer" },
+          { name: "Priya Sharma",    role: "Researcher" },
+          { name: "Tom Brennan",     role: "Content Strategist" },
+          { name: "Aisha Osei",      role: "Visual Designer" }
+        ]
+      },
+      {
+        id: 2, name: "HSBC Digital Transformation", lead: "James Okafor",
+        delivery: "at-risk", morale: "critical", satisfaction: "at-risk",
+        updated: "2026-04-11",
+        people: [
+          { name: "James Okafor",    role: "Lead Designer" },
+          { name: "Priya Sharma",    role: "UX Designer" },
+          { name: "Tom Brennan",     role: "Interaction Designer" },
+          { name: "Aisha Osei",      role: "Researcher" }
+        ]
+      },
+      {
+        id: 3, name: "Vodafone UX Overhaul", lead: "Priya Sharma",
+        delivery: "on-track", morale: "on-track", satisfaction: "on-track",
+        updated: "2026-04-13",
+        people: [
+          { name: "Priya Sharma",    role: "Lead Designer" },
+          { name: "Sarah Mitchell",  role: "UX Strategist" },
+          { name: "Aisha Osei",      role: "Visual Designer" },
+          { name: "James Okafor",    role: "Prototyper" }
+        ]
+      },
+      {
+        id: 4, name: "NatWest Design System", lead: "Tom Brennan",
+        delivery: "critical", morale: "at-risk", satisfaction: "critical",
+        updated: "2026-04-02",
+        people: [
+          { name: "Tom Brennan",     role: "Design System Lead" },
+          { name: "Aisha Osei",      role: "Component Designer" },
+          { name: "Sarah Mitchell",  role: "Accessibility Lead" }
+        ]
+      },
+      {
+        id: 5, name: "BT Consumer Portal", lead: "Aisha Osei",
+        delivery: "at-risk", morale: "on-track", satisfaction: "at-risk",
+        updated: "2026-04-12",
+        people: [
+          { name: "Aisha Osei",      role: "Lead Designer" },
+          { name: "James Okafor",    role: "UX Designer" },
+          { name: "Priya Sharma",    role: "Researcher" },
+          { name: "Tom Brennan",     role: "Content Designer" },
+          { name: "Sarah Mitchell",  role: "Visual Designer" }
+        ]
+      }
+    ];
+    let teams = [
+      {
+        id: 1, name: "CX Design Team", lead: "Sarah Mitchell",
+        delivery: "on-track", morale: "at-risk", satisfaction: "on-track",
+        updated: "2026-04-14",
+        people: [
+          { name: "Sarah Mitchell",  role: "Team Lead" },
+          { name: "James Okafor",    role: "Senior Designer" },
+          { name: "Priya Sharma",    role: "UX Researcher" },
+          { name: "Tom Brennan",     role: "Content Designer" },
+          { name: "Aisha Osei",      role: "Visual Designer" },
+          { name: "Lena Fischer",    role: "Junior Designer" }
+        ]
+      },
+      {
+        id: 2, name: "Product Design Team", lead: "James Okafor",
+        delivery: "at-risk", morale: "at-risk", satisfaction: "at-risk",
+        updated: "2026-04-11",
+        people: [
+          { name: "James Okafor",    role: "Team Lead" },
+          { name: "Priya Sharma",    role: "Product Designer" },
+          { name: "Aisha Osei",      role: "UX Designer" },
+          { name: "Tom Brennan",     role: "Interaction Designer" }
+        ]
+      },
+      {
+        id: 3, name: "Research & Insights", lead: "Priya Sharma",
+        delivery: "on-track", morale: "on-track", satisfaction: "on-track",
+        updated: "2026-04-13",
+        people: [
+          { name: "Priya Sharma",    role: "Research Lead" },
+          { name: "Lena Fischer",    role: "UX Researcher" },
+          { name: "Sarah Mitchell",  role: "Research Strategist" }
+        ]
+      }
+    ];
+    let checkins = {};
+
+    function loadSharedData() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved.projects) {
+          const defaults = projects.slice();
+          projects = saved.projects.map(p => Object.assign({}, defaults.find(d => d.id === p.id) || {}, p));
+        }
+        if (saved.teams) {
+          const defaults = teams.slice();
+          teams = saved.teams.map(t => Object.assign({}, defaults.find(d => d.id === t.id) || {}, t));
+        }
+        if (saved.checkins) checkins = Object.assign({}, saved.checkins);
+      } catch(e) {}
+    }
+
+    function persistShared() {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify({ projects, teams, checkins }));
+      } catch(e) {}
+    }
+
+    // ── All unique people across projects & teams ─────────────────────
+    function getAllPeople() {
+      const seen = new Set();
+      const all  = [];
+      [...projects, ...teams].forEach(item => {
+        item.people.forEach(p => {
+          if (!seen.has(p.name)) {
+            seen.add(p.name);
+            all.push(p.name);
+          }
+        });
+      });
+      return all.sort();
+    }
+
+    // ── App state ─────────────────────────────────────────────────────
+    let currentUser = null;  // name string
+    let selectedFeelings = {}; // { "project-1": "good", "team-2": "okay", ... }
+
+    // ── Routing ───────────────────────────────────────────────────────
+    function render() {
+      if (!currentUser) {
+        renderPersonaPicker();
+      } else {
+        renderMemberDashboard();
+      }
+    }
+
+    // ── Persona picker ────────────────────────────────────────────────
+    function renderPersonaPicker() {
+      const people = getAllPeople();
+      const app = document.getElementById("app");
+
+      app.innerHTML = `
+        <div class="container py-5" style="max-width:480px;">
+          <div class="text-center mb-4">
+            <div style="font-size:2.5rem;margin-bottom:0.5rem;">👋</div>
+            <h2 style="color:var(--primary);font-weight:800;">Who are you?</h2>
+            <p class="text-muted" style="font-size:0.9rem;">Pick your name to see your projects and check in.</p>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            ${people.map(name => `
+              <button class="persona-btn" onclick="selectUser('${name.replace(/'/g,"\\'")}')">
+                <div class="persona-avatar" style="background:${avatarColor(name)};">${initials(name)}</div>
+                <div>
+                  <div style="font-weight:700;color:var(--primary);font-size:0.9rem;">${name}</div>
+                  <div style="font-size:0.72rem;color:var(--grey-dark);">${getPersonRoles(name)}</div>
+                </div>
+              </button>`).join("")}
+          </div>
+        </div>`;
+    }
+
+    function getPersonRoles(name) {
+      const roles = [];
+      [...projects, ...teams].forEach(item => {
+        const person = item.people.find(p => p.name === name);
+        if (person) roles.push(person.role);
+      });
+      // Deduplicate
+      return [...new Set(roles)].slice(0, 2).join(" · ") || "Team member";
+    }
+
+    function selectUser(name) {
+      currentUser = name;
+      // Load any pre-selected feelings from sessionStorage
+      try {
+        const raw = sessionStorage.getItem("member_feelings_" + name);
+        selectedFeelings = raw ? JSON.parse(raw) : {};
+      } catch(e) { selectedFeelings = {}; }
+      render();
+    }
+
+    // ── Member dashboard ──────────────────────────────────────────────
+    function renderMemberDashboard() {
+      const name = currentUser;
+      const myProjects = projects.filter(p => p.people.some(x => x.name === name));
+      const myTeams    = teams.filter(t => t.people.some(x => x.name === name));
+
+      // Gather all check-ins this person has submitted
+      const myHistory = [];
+      Object.entries(checkins).forEach(([key, entries]) => {
+        entries.forEach(e => {
+          if (e.person === name) myHistory.push({ key, ...e });
+        });
+      });
+      myHistory.sort((a,b) => b.date > a.date ? 1 : -1);
+
+      const app = document.getElementById("app");
+      app.innerHTML = `
+        <!-- Hero header -->
+        <div class="page-header">
+          <div class="container" style="max-width:720px;">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="avatar-hero" style="background:${avatarColor(name)};">${initials(name)}</div>
+              <div>
+                <h1 style="font-size:1.6rem;font-weight:800;margin:0;">${name}</h1>
+                <p style="opacity:0.7;font-size:0.85rem;margin:0;">${getPersonRoles(name)}</p>
+              </div>
+            </div>
+            <button onclick="signOut()" style="background:rgba(255,255,255,0.15);border:none;border-radius:50px;padding:5px 14px;color:rgba(255,255,255,0.8);font-size:0.78rem;cursor:pointer;">
+              ← Switch person
+            </button>
+          </div>
+        </div>
+
+        <div class="container py-4" style="max-width:720px;">
+
+          <!-- ── Check in section ────────────────────────────────── -->
+          ${(myProjects.length + myTeams.length) > 0 ? `
+          <div class="section-label">How are things going?</div>
+          <div id="checkinSection">
+            ${myProjects.map(p => renderCheckinCard(p, "project")).join("")}
+            ${myTeams.map(t => renderCheckinCard(t, "team")).join("")}
+          </div>` : ""}
+
+          <!-- ── My projects ─────────────────────────────────────── -->
+          <div class="section-label mt-4">My projects (${myProjects.length})</div>
+          ${myProjects.length > 0
+            ? myProjects.map(p => renderProjectCard(p, "project", name)).join("")
+            : `<div class="empty-state"><div class="empty-icon">📋</div><p>You're not assigned to any projects yet.</p></div>`}
+
+          <!-- ── My teams ────────────────────────────────────────── -->
+          ${myTeams.length > 0 ? `
+          <div class="section-label mt-4">My teams (${myTeams.length})</div>
+          ${myTeams.map(t => renderProjectCard(t, "team", name)).join("")}
+          ` : ""}
+
+          <!-- ── Check-in history ────────────────────────────────── -->
+          <div class="section-label mt-4">Your check-in history (${myHistory.length})</div>
+          ${myHistory.length > 0
+            ? `<div class="history-list">${myHistory.slice(0, 20).map(h => renderHistoryRow(h)).join("")}</div>`
+            : `<div class="checkin-card" style="text-align:center;padding:2rem;">
+                <div style="font-size:2rem;margin-bottom:0.5rem;">💬</div>
+                <p style="color:var(--grey-dark);font-size:0.88rem;margin:0;">No check-ins yet — use the cards above to share how things are going.</p>
+               </div>`}
+
+        </div>`;
+    }
+
+    function renderCheckinCard(item, type) {
+      const key     = type + "-" + item.id;
+      const feeling = selectedFeelings[key] || null;
+      const overall = overallStatus(item);
+      const label   = type === "team" ? "team" : "project";
+
+      return `
+        <div class="checkin-card" id="checkinCard-${key}">
+          <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+            <div>
+              <h6>${item.name}</h6>
+              <span style="font-size:0.72rem;color:var(--grey-dark);">
+                ${type === "team" ? "Team" : "Project"} · Led by ${item.lead}
+              </span>
+            </div>
+            <span class="status-label-sm" style="background:${STATUS_BG[overall]};color:${STATUS_TEXT[overall]};white-space:nowrap;">
+              ${STATUS_LABEL[overall]}
+            </span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--grey-very-dark);margin-bottom:0.85rem;">
+            How are you feeling about this ${label} right now?
+          </p>
+          <div class="d-flex gap-2 mb-3">
+            ${["good","okay","struggling"].map(f => `
+              <button class="feel-btn ${feeling === f ? "feel-"+f : ""}" onclick="selectFeeling('${key}','${f}')">
+                <span class="feel-emoji">${CI_EMOJI[f]}</span>
+                ${CI_LABEL[f]}
+              </button>`).join("")}
+          </div>
+          <div id="noteArea-${key}" style="${feeling ? "" : "display:none;"}">
+            <textarea id="noteInput-${key}" rows="2" placeholder="Anything you'd like to add? (optional)"
+              style="width:100%;border-radius:10px;border:1px solid var(--grey-light);padding:0.6rem 0.85rem;font-size:0.85rem;resize:none;"></textarea>
+            <div class="d-flex justify-content-end mt-2">
+              <button onclick="submitCheckin('${key}','${type}',${item.id})"
+                style="background:var(--primary);color:white;border:none;border-radius:50px;padding:7px 20px;font-size:0.82rem;font-weight:600;cursor:pointer;">
+                Submit check-in
+              </button>
+            </div>
+          </div>
+          <div id="doneArea-${key}" style="display:none;text-align:center;padding:0.5rem;">
+            <span style="font-size:1.2rem;">✅</span>
+            <span style="font-size:0.85rem;color:var(--grey-very-dark);margin-left:6px;">Check-in recorded</span>
+          </div>
+        </div>`;
+    }
+
+    function renderProjectCard(item, type, myName) {
+      const overall = overallStatus(item);
+      const me = item.people.find(p => p.name === myName);
+      const myRole = me ? me.role : "Team member";
+
+      // Count my check-ins for this item
+      const key = type + "-" + item.id;
+      const myCI = (checkins[key] || []).filter(e => e.person === myName);
+      const lastCI = myCI[myCI.length - 1];
+
+      return `
+        <div class="project-card status-${overall}">
+          <div class="d-flex align-items-start justify-content-between gap-2">
+            <div style="min-width:0;">
+              <div style="font-weight:700;color:var(--primary);font-size:0.88rem;">${item.name}</div>
+              <div style="font-size:0.72rem;color:var(--grey-dark);margin-top:2px;">
+                ${myRole}
+                ${type === "team" ? " · team" : " · project"}
+                · Led by ${item.lead}
+              </div>
+            </div>
+            <span class="status-label-sm flex-shrink-0" style="background:${STATUS_BG[overall]};color:${STATUS_TEXT[overall]};">
+              ${STATUS_LABEL[overall]}
+            </span>
+          </div>
+          ${lastCI ? `
+          <div class="mt-2" style="font-size:0.72rem;color:var(--grey-dark);">
+            Last check-in: ${CI_EMOJI[lastCI.feeling]} ${CI_LABEL[lastCI.feeling]} · ${relativeDate(lastCI.date)}
+          </div>` : `
+          <div class="mt-2" style="font-size:0.72rem;color:var(--grey-dark);">No check-ins yet</div>`}
+          <div class="mt-2 d-flex gap-2 flex-wrap">
+            ${["delivery","morale","satisfaction"].map(dim => `
+              <span style="font-size:0.67rem;font-weight:600;border-radius:50px;padding:2px 9px;
+                background:${STATUS_BG[item[dim]]};color:${STATUS_TEXT[item[dim]]};">
+                ${dim.charAt(0).toUpperCase()+dim.slice(1)}: ${STATUS_LABEL[item[dim]]}
+              </span>`).join("")}
+          </div>
+        </div>`;
+    }
+
+    function renderHistoryRow(entry) {
+      const f = entry.feeling;
+      const itemName = getItemName(entry.key);
+      return `
+        <div class="history-row">
+          <div class="history-emoji">${CI_EMOJI[f]}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--primary);">
+              <span style="padding:1px 9px;border-radius:50px;font-size:0.72rem;background:${CI_BG[f]};color:${CI_TEXT[f]};">${CI_LABEL[f]}</span>
+              <span class="ms-2" style="font-weight:400;color:var(--grey-very-dark);">${itemName}</span>
+            </div>
+            ${entry.note ? `<div class="history-note">"${entry.note}"</div>` : ""}
+            <div class="history-meta mt-1">${formatDate(entry.date)}</div>
+          </div>
+        </div>`;
+    }
+
+    function getItemName(key) {
+      const [type, id] = key.split("-");
+      const data = type === "project" ? projects : teams;
+      const item = data.find(i => i.id === parseInt(id));
+      return item ? item.name : key;
+    }
+
+    // ── Interactions ──────────────────────────────────────────────────
+    function selectFeeling(key, feeling) {
+      selectedFeelings[key] = feeling;
+      try { sessionStorage.setItem("member_feelings_" + currentUser, JSON.stringify(selectedFeelings)); } catch(e) {}
+
+      // Update button styles
+      const card = document.getElementById("checkinCard-" + key);
+      if (!card) return;
+      card.querySelectorAll(".feel-btn").forEach(btn => {
+        btn.classList.remove("feel-good","feel-okay","feel-struggling");
+      });
+      const selected = card.querySelectorAll(".feel-btn")
+        [["good","okay","struggling"].indexOf(feeling)];
+      if (selected) selected.classList.add("feel-" + feeling);
+
+      // Show note area
+      const noteArea = document.getElementById("noteArea-" + key);
+      if (noteArea) noteArea.style.display = "";
+    }
+
+    function submitCheckin(key, type, itemId) {
+      const feeling = selectedFeelings[key];
+      if (!feeling) { showToast("Please select how you're feeling first."); return; }
+      const noteEl = document.getElementById("noteInput-" + key);
+      const note   = noteEl ? noteEl.value.trim() : "";
+
+      if (!checkins[key]) checkins[key] = [];
+      checkins[key].push({
+        person:  currentUser,
+        feeling,
+        note,
+        date: new Date().toISOString().split("T")[0]
+      });
+      persistShared();
+
+      // Show done state, hide form
+      const noteArea = document.getElementById("noteArea-" + key);
+      const doneArea = document.getElementById("doneArea-" + key);
+      if (noteArea) noteArea.style.display = "none";
+      if (doneArea) doneArea.style.display = "";
+
+      showToast("Check-in saved! 🎉");
+
+      // Refresh history section after a moment
+      setTimeout(() => renderMemberDashboard(), 1000);
+    }
+
+    function signOut() {
+      currentUser = null;
+      selectedFeelings = {};
+      render();
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────
+    loadSharedData();
+    render();
+  </script>
+</body>
+</html>

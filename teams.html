@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teams – Cognizant Project Health</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    @font-face { font-family: "Gellix-Regular";         src: url("fonts/Gellix-Regular.woff") format("woff");         font-weight: normal; font-style: normal; }
+    @font-face { font-family: "Gellix-RegularItalic";   src: url("fonts/Gellix-RegularItalic.woff") format("woff");   font-weight: normal; font-style: normal; }
+    @font-face { font-family: "Gellix-Light";           src: url("fonts/Gellix-Light.woff") format("woff");           font-weight: normal; font-style: normal; }
+    @font-face { font-family: "Gellix-LightItalic";     src: url("fonts/Gellix-LightItalic.woff") format("woff");     font-weight: normal; font-style: normal; }
+    @font-face { font-family: "Gellix-SemiBold";        src: url("fonts/Gellix-SemiBold.woff") format("woff");        font-weight: normal; font-style: normal; }
+    @font-face { font-family: "Gellix-SemiBoldItalic";  src: url("fonts/Gellix-SemiBoldItalic.woff") format("woff");  font-weight: normal; font-style: normal; }
+
+    :root {
+      --primary:           #000048;
+      --accent1-dark:      #2E308E;
+      --accent2-dark:      #2F78C4;
+      --accent3-dark:      #06C7CC;
+      --accent1-medium:    #7373D8;
+      --accent2-medium:    #6AA2DC;
+      --accent3-medium:    #26EFE9;
+      --accent1-light:     #85A0F9;
+      --grey-very-dark:    #53565A;
+      --grey-dark:         #97999B;
+      --grey-medium:       #D0D0CE;
+      --grey-light:        #E8E8E6;
+      --grey-very-light:   #F7F7F5;
+      --container-background: #F0F8FF;
+      --link-color:        #2F78C4;
+      --accent:            #7373D8;
+      --accent2:           #06C7CC;
+    }
+
+    body { -webkit-font-smoothing: antialiased; font-size: 14px; background: var(--container-background); word-break: break-word; overflow-x: hidden; font-family: "Gellix-Regular", sans-serif; color: var(--primary); margin: 0; }
+    .cog-nav { background: var(--primary); padding: 0 1.5rem; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+    .cog-brand { color: white; font-weight: 800; font-size: 1rem; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .cog-brand:hover { color: rgba(255,255,255,0.85); }
+    .alpha-pill { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.5px; background: rgba(133,160,249,0.15); color: #85A0F9; border: 1px solid rgba(133,160,249,0.35); padding: 1px 8px; border-radius: 50px; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 4px; align-items: center; }
+    .nav-lnk { color: rgba(255,255,255,0.55); font-size: 0.88rem; text-decoration: none; padding: 5px 14px; border-radius: 50px; transition: all 0.15s; white-space: nowrap; }
+    .nav-lnk:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.08); }
+    .nav-lnk.active { color: rgba(255,255,255,0.95); background: rgba(255,255,255,0.14); }
+    .nav-ghost { color: rgba(255,255,255,0.55); font-size: 0.78rem; text-decoration: none; padding: 4px 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50px; margin-left: 8px; transition: all 0.15s; white-space: nowrap; }
+    .nav-ghost:hover { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.5); }
+
+    .page-header { background: linear-gradient(94deg, rgb(201,105,113) -7.47%, rgb(91,61,150) 15.24%, rgb(32,16,116) 34.36%, rgb(11,88,170) 74.77%, rgb(0,0,72) 100.44%); border-top: 1px solid rgb(106,162,220); color: white; padding: 2rem 0 1.75rem; }
+    .breadcrumb-nav { font-size: 0.75rem; opacity: 0.55; margin-bottom: 0.5rem; }
+    .breadcrumb-nav a { color: white; text-decoration: none; }
+    .stat-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 50px; padding: 5px 14px; font-size: 0.8rem; }
+    .stat-chip-num { font-weight: 800; font-size: 1rem; }
+    .btn-add { background: var(--accent3-medium); color: var(--primary); border: none; border-radius: 50px; padding: 8px 20px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; font-family: "Gellix-SemiBold", sans-serif; }
+    .btn-add:hover { background: var(--accent3-dark); }
+
+    .toolbar { background: white; border-bottom: 1px solid var(--grey-light); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+    .toolbar input, .toolbar select { border: 1px solid var(--grey-dark); border-radius: 50px; padding: 0.4rem 1rem; font-size: 0.85rem; background: #f5f5f2; outline: none; font-family: "Gellix-Regular", sans-serif; color: var(--primary); }
+    .toolbar input:focus, .toolbar select:focus { border-color: var(--accent1-medium); background: white; box-shadow: 0 0 0 2px rgba(115,115,216,0.15); }
+    #searchInput { width: 220px; }
+    .btn-export { background: transparent; border: 2px solid var(--primary); border-radius: 50px; padding: 6px 16px; font-size: 0.82rem; cursor: pointer; color: var(--primary); transition: all 0.2s; font-family: "Gellix-SemiBold", sans-serif; }
+    .btn-export:hover { border-color: var(--accent1-medium); color: var(--accent1-medium); }
+
+    .table-card { background: white; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,72,0.07); overflow: hidden; margin: 1.5rem; }
+    .tbl { width: 100%; border-collapse: collapse; }
+    .tbl thead th { background: var(--grey-very-light); padding: 11px 14px; font-size: 0.74rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--grey-light); white-space: nowrap; cursor: pointer; user-select: none; font-family: "Gellix-SemiBold", sans-serif; }
+    .tbl thead th.no-sort { cursor: default; }
+    .tbl thead th:not(.no-sort):hover { color: var(--primary); }
+    .tbl thead th.sort-active { color: var(--primary); }
+    .tbl tbody tr { border-bottom: 1px solid var(--grey-very-light); cursor: pointer; transition: background 0.1s; }
+    .tbl tbody tr:hover { background: var(--grey-very-light); }
+    .tbl tbody tr:last-child { border-bottom: none; }
+    .tbl tbody td { padding: 13px 14px; font-size: 0.84rem; vertical-align: middle; }
+    .tbl tbody td.actions { text-align: right; white-space: nowrap; }
+
+    .cell-name { font-weight: 700; color: var(--primary); font-size: 0.88rem; }
+    .cell-lead { font-size: 0.72rem; color: var(--grey-dark); margin-top: 1px; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+    .rag-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+    .rag-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .avatar-sm { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: white; border: 2px solid white; margin-left: -6px; }
+    .avatar-sm:first-child { margin-left: 0; }
+    .action-btn { background: transparent; border: none; padding: 5px 7px; border-radius: 6px; cursor: pointer; color: var(--grey-dark); transition: background 0.12s, color 0.12s; }
+    .action-btn:hover { background: var(--grey-light); color: var(--primary); }
+    .stale-text { color: #D4A017; }
+    .ci-bar-wrap { width: 60px; height: 4px; background: var(--grey-light); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+    .ci-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+
+    /* Drawer */
+    .drawer-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1040; opacity: 0; transition: opacity 0.25s; pointer-events: none; }
+    .drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: 420px; background: white; z-index: 1050; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); box-shadow: -4px 0 24px rgba(0,0,72,0.12); }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header { background: var(--primary); color: white; padding: 1.1rem 1.25rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-shrink: 0; }
+    .drawer-title { font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
+    .drawer-close { background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 2px; font-size: 1.1rem; }
+    .drawer-close:hover { color: white; }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 1.25rem; }
+    .drawer-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--grey-light); display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+    .btn-delete { margin-right: auto; background: transparent; border: none; color: #B81F2D; font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 6px 0; }
+    .btn-delete:hover { text-decoration: underline; }
+    .btn-sm-outline { background: transparent; border: 1px solid var(--grey-light); border-radius: 50px; padding: 6px 14px; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+    .btn-sm-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-sm-solid { background: var(--accent1-medium); color: white; border: none; border-radius: 50px; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; font-family: "Gellix-SemiBold", sans-serif; }
+    .btn-sm-solid:hover { background: var(--accent1-light); }
+
+    .dim-card { border-radius: 10px; padding: 0.85rem; text-align: center; }
+    .section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--grey-dark); margin-bottom: 0.75rem; margin-top: 1.25rem; }
+    .person-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--grey-very-light); margin-bottom: 6px; }
+    .avatar-md { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: white; flex-shrink: 0; }
+    .ci-bubble { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; }
+    .checkin-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; background: var(--grey-very-light); border-radius: 10px; margin-bottom: 6px; }
+
+    .empty-state { text-align: center; padding: 3.5rem 1rem; color: var(--grey-dark); }
+    .empty-state svg { opacity: 0.3; margin-bottom: 1rem; }
+    #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; background: var(--primary); color: white; padding: 0.7rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; opacity: 0; transform: translateY(8px); transition: opacity 0.25s, transform 0.25s; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      .hide-mobile { display: none !important; }
+      .table-card { margin: 0.75rem; }
+      .drawer { width: 100vw; }
+      #searchInput { width: 150px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="cog-nav">
+    <a class="cog-brand" href="index.html">
+      Cognizant ProjectTracker
+      <span class="alpha-pill">Alpha</span>
+    </a>
+    <div class="nav-links d-none d-sm-flex">
+      <a href="index.html"    class="nav-lnk">Dashboard</a>
+      <a href="projects.html" class="nav-lnk">Projects</a>
+      <a href="teams.html"    class="nav-lnk active">Teams</a>
+      <a href="member.html"   class="nav-ghost">My view ↗</a>
+    </div>
+  </nav>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="container-fluid px-4">
+      <div class="breadcrumb-nav"><a href="index.html">Dashboard</a> / Teams</div>
+      <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+        <div>
+          <h1 style="font-size:1.75rem;font-weight:800;margin:0 0 0.25rem;">Teams</h1>
+          <p style="opacity:0.65;font-size:0.88rem;margin:0 0 1rem;">Wellbeing and delivery across your design teams</p>
+          <div class="d-flex gap-2 flex-wrap" id="statChips"></div>
+        </div>
+        <button class="btn-add mt-1" onclick="openAddModal()">+ Add team</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <input type="text" id="searchInput" placeholder="Search teams…" oninput="renderTable()">
+      <select id="statusFilter" onchange="renderTable()" style="border-radius:50px;padding:0.4rem 1rem;font-size:0.85rem;border:1px solid var(--grey-light);background:var(--grey-very-light);">
+        <option value="">All statuses</option>
+        <option value="on-track">On Track</option>
+        <option value="at-risk">At Risk</option>
+        <option value="critical">Critical</option>
+      </select>
+    </div>
+    <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th onclick="setSort('name')"         id="th-name">Team <span class="sort-arrow"></span></th>
+          <th onclick="setSort('status')"        id="th-status" class="hide-mobile">Status <span class="sort-arrow"></span></th>
+          <th onclick="setSort('delivery')"      id="th-delivery" class="hide-mobile">Delivery <span class="sort-arrow"></span></th>
+          <th onclick="setSort('morale')"        id="th-morale" class="hide-mobile">Morale <span class="sort-arrow"></span></th>
+          <th onclick="setSort('satisfaction')"  id="th-satisfaction" class="hide-mobile">Satisfaction <span class="sort-arrow"></span></th>
+          <th class="no-sort" id="th-members">Members</th>
+          <th class="no-sort hide-mobile" id="th-checkins">Check-ins</th>
+          <th class="no-sort hide-mobile" id="th-sparkline">Morale trend</th>
+          <th onclick="setSort('updated')"       id="th-updated">Updated <span class="sort-arrow"></span></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="emptyState" style="display:none;" class="empty-state">
+      <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+      <p class="mb-1 fw-bold">No teams found</p>
+      <p style="font-size:0.85rem;">Try adjusting your search or filter.</p>
+      <button class="btn-sm-outline mt-2" onclick="clearFilters()">Clear filters</button>
+    </div>
+  </div>
+
+  <!-- Drawer backdrop -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+
+  <!-- Side drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title" id="drawerTitle">—</div>
+        <div id="drawerBadge"></div>
+      </div>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+    <div class="drawer-footer">
+      <button class="btn-delete" id="drawerDeleteBtn">Delete team</button>
+      <button class="btn-sm-outline" onclick="closeDrawer()">Close</button>
+      <button class="btn-sm-outline" id="drawerEditBtn">Edit</button>
+      <button class="btn-sm-solid" id="drawerUpdateBtn">Update status</button>
+    </div>
+  </div>
+
+  <!-- Update Status Modal -->
+  <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius:14px;border:none;">
+        <div class="modal-header" style="background:var(--primary);color:white;border-radius:14px 14px 0 0;">
+          <h5 class="modal-title">Update Health Status</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3"><label class="form-label fw-bold">Team</label>
+            <select id="modalItem" style="border-radius:8px!important;"></select></div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4"><label class="form-label fw-bold">Delivery</label>
+              <select id="modalDelivery" style="border-radius:8px!important;"><option value="on-track">On Track</option><option value="at-risk">At Risk</option><option value="critical">Critical</option></select></div>
+            <div class="col-md-4"><label class="form-label fw-bold">Morale</label>
+              <select id="modalMorale" style="border-radius:8px!important;"><option value="on-track">On Track</option><option value="at-risk">At Risk</option><option value="critical">Critical</option></select></div>
+            <div class="col-md-4"><label class="form-label fw-bold">Satisfaction</label>
+              <select id="modalSatisfaction" style="border-radius:8px!important;"><option value="on-track">On Track</option><option value="at-risk">At Risk</option><option value="critical">Critical</option></select></div>
+          </div>
+          <div class="mb-2"><label class="form-label fw-bold">Notes <span style="font-weight:400;color:var(--grey-dark);">(optional)</span></label>
+            <textarea id="modalNotes" rows="3" style="border-radius:8px!important;" placeholder="Any context…"></textarea></div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--grey-light);">
+          <button class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm" style="background:var(--accent1-medium);color:white;font-family:'Gellix-SemiBold',sans-serif;border-radius:50px;" onclick="submitUpdate()">Save update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" style="border-radius:14px;border:none;">
+        <div class="modal-header" style="background:var(--primary);color:white;border-radius:14px 14px 0 0;">
+          <h5 class="modal-title">Edit Team</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="editId">
+          <div class="row g-3 mb-3">
+            <div class="col-md-8"><label class="form-label fw-bold">Team name</label>
+              <input type="text" id="editName" style="border-radius:8px!important;"></div>
+            <div class="col-md-4"><label class="form-label fw-bold">Lead</label>
+              <input type="text" id="editLead" style="border-radius:8px!important;"></div>
+          </div>
+          <div class="mb-3"><label class="form-label fw-bold">Notes</label>
+            <textarea id="editNotes" rows="2" style="border-radius:8px!important;"></textarea></div>
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">Members</label>
+              <button type="button" class="btn btn-outline-dark btn-sm" style="border-radius:50px;font-size:0.74rem;" onclick="addEditPersonRow()">+ Add member</button>
+            </div>
+            <div id="editPeopleList" class="d-flex flex-column gap-2"></div>
+          </div>
+          <div id="editError" class="text-danger mt-2" style="font-size:0.82rem;display:none;"></div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--grey-light);">
+          <button class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm" style="background:var(--accent1-medium);color:white;font-family:'Gellix-SemiBold',sans-serif;border-radius:50px;" onclick="submitEdit()">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Team Modal -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" style="border-radius:14px;border:none;">
+        <div class="modal-header" style="background:var(--primary);color:white;border-radius:14px 14px 0 0;">
+          <h5 class="modal-title">Add Team</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-3">
+            <div class="col-md-8"><label class="form-label fw-bold">Team name</label>
+              <input type="text" id="addName" placeholder="e.g. Service Design Team" style="border-radius:8px!important;"></div>
+            <div class="col-md-4"><label class="form-label fw-bold">Lead</label>
+              <input type="text" id="addLead" placeholder="e.g. James Okafor" style="border-radius:8px!important;"></div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4"><label class="form-label fw-bold">Delivery</label>
+              <select id="addDelivery" style="border-radius:8px!important;"><option value="on-track">On Track</option><option value="at-risk">At Risk</option><option value="critical">Critical</option></select></div>
+            <div class="col-md-4"><label class="form-label fw-bold">Morale</label>
+              <select id="addMorale" style="border-radius:8px!important;"><option value="on-track">On Track</option><option value="at-risk">At Risk</option><option value="critical">Critical</option></select></div>
+            <div class="col-md-4"><label class="form-label fw-bold">Satisfaction</label>
+              <select id="addSatisfaction" style="border-radius:8px!important;"><option value="on-track">On Track</option><option value="at-risk">At Risk</option><option value="critical">Critical</option></select></div>
+          </div>
+          <div class="mb-3"><label class="form-label fw-bold">Notes <span style="font-weight:400;color:var(--grey-dark);">(optional)</span></label>
+            <textarea id="addNotes" rows="2" style="border-radius:8px!important;" placeholder="Any context…"></textarea></div>
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">Members</label>
+              <button type="button" class="btn btn-outline-dark btn-sm" style="border-radius:50px;font-size:0.74rem;" onclick="addAddPersonRow()">+ Add member</button>
+            </div>
+            <div id="addPeopleList" class="d-flex flex-column gap-2"></div>
+          </div>
+          <div id="addError" class="text-danger mt-2" style="font-size:0.82rem;display:none;"></div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--grey-light);">
+          <button class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm" style="background:var(--accent1-medium);color:white;font-family:'Gellix-SemiBold',sans-serif;border-radius:50px;" onclick="submitAdd()">Add team</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <div class="mb-5"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const TODAY = new Date("2026-04-14");
+    const STORE_KEY = "cpt_data";
+    const STATUS_LABEL = { "on-track": "On Track", "at-risk": "At Risk", "critical": "Critical" };
+    const STATUS_COLOR = { "on-track": "#2DB81F", "at-risk": "#D4A017", "critical": "#B81F2D" };
+    const STATUS_BG    = { "on-track": "#e8f8e6", "at-risk": "#fdf5dc", "critical": "#fce8ea" };
+    const STATUS_TEXT  = { "on-track": "#1a6e12", "at-risk": "#7a5800", "critical": "#7a1219" };
+    const CI_EMOJI = { good: "😊", okay: "😐", struggling: "😟" };
+    const CI_LABEL = { good: "Good", okay: "Okay", struggling: "Struggling" };
+    const CI_BG    = { good: "#e8f8e6", okay: "#fdf5dc", struggling: "#fce8ea" };
+    const CI_TEXT  = { good: "#1a6e12", okay: "#7a5800", struggling: "#7a1219" };
+    const AVATAR_PALETTE = ["#7373D8","#2F78C4","#06C7CC","#2E308E","#26C4AB","#B56AC4","#4A90D9","#D4A017"];
+
+    let projects = [
+      { id:1, name:"Kyndryl Account Refresh", lead:"Sarah Mitchell", delivery:"on-track", morale:"at-risk", satisfaction:"on-track", updated:"2026-04-14", notes:"Sprint 4 on schedule.", start:"2026-01-06", end:"2026-06-30", milestones:[], people:[{name:"Sarah Mitchell",role:"Design Lead"},{name:"Marcus Chen",role:"Senior UX Designer"},{name:"Aisha Patel",role:"UX Researcher"},{name:"Tom Hughes",role:"UI Designer"}], history:{delivery:[90,85,82],morale:[80,70,65],satisfaction:[92,88,85]} },
+      { id:2, name:"HSBC Digital Transformation", lead:"James Okafor", delivery:"at-risk", morale:"critical", satisfaction:"at-risk", updated:"2026-04-11", notes:"Scope creep impacting delivery.", start:"2025-11-01", end:"2026-07-31", milestones:[], people:[{name:"James Okafor",role:"Design Lead"},{name:"Priya Kapoor",role:"UX Designer"},{name:"Dean Walsh",role:"Service Designer"},{name:"Lena Müller",role:"UX Researcher"},{name:"Chris Park",role:"UI Designer"}], history:{delivery:[80,65,55],morale:[70,50,30],satisfaction:[75,65,55]} },
+      { id:3, name:"Vodafone UX Overhaul", lead:"Priya Sharma", delivery:"on-track", morale:"on-track", satisfaction:"on-track", updated:"2026-04-13", notes:"Strong progress.", start:"2026-02-01", end:"2026-08-31", milestones:[], people:[{name:"Priya Sharma",role:"Design Lead"},{name:"David Kim",role:"Senior UX Designer"},{name:"Fatima Al-Rashid",role:"UI Designer"}], history:{delivery:[85,88,92],morale:[82,85,90],satisfaction:[80,85,92]} },
+      { id:4, name:"NatWest Design System", lead:"Tom Brennan", delivery:"critical", morale:"at-risk", satisfaction:"critical", updated:"2026-04-02", notes:"Blockers on dev handoff.", start:"2025-10-01", end:"2026-05-31", milestones:[], people:[{name:"Tom Brennan",role:"Design Lead"},{name:"Sophie Clarke",role:"Design Systems Designer"},{name:"Raj Patel",role:"UI Developer"}], history:{delivery:[75,60,30],morale:[70,60,50],satisfaction:[70,50,20]} },
+      { id:5, name:"BT Consumer Portal", lead:"Aisha Osei", delivery:"at-risk", morale:"on-track", satisfaction:"at-risk", updated:"2026-04-12", notes:"Delayed 2 weeks due to API dependency.", start:"2026-01-15", end:"2026-09-30", milestones:[], people:[{name:"Aisha Osei",role:"Design Lead"},{name:"Ben Taylor",role:"UX Designer"},{name:"Mia Johnson",role:"Content Designer"},{name:"Yuki Tanaka",role:"UX Researcher"}], history:{delivery:[88,75,65],morale:[85,85,88],satisfaction:[80,70,60]} }
+    ];
+    let teams = [
+      { id:1, name:"CX Design Team", lead:"Sarah Mitchell", delivery:"on-track", morale:"on-track", satisfaction:"on-track", updated:"2026-04-14", notes:"Team performing well across all accounts.", people:[{name:"Sarah Mitchell",role:"Design Lead"},{name:"Marcus Chen",role:"Senior UX Designer"},{name:"Aisha Patel",role:"UX Researcher"},{name:"Tom Hughes",role:"UI Designer"},{name:"Fatima Al-Rashid",role:"UI Designer"},{name:"Yuki Tanaka",role:"UX Researcher"},{name:"Ben Taylor",role:"UX Designer"},{name:"Sophie Clarke",role:"Design Systems Designer"}], history:{delivery:[85,88,92],morale:[82,85,88],satisfaction:[80,85,90]} },
+      { id:2, name:"Product Design Team", lead:"James Okafor", delivery:"at-risk", morale:"at-risk", satisfaction:"on-track", updated:"2026-04-11", notes:"Stretched capacity. Two members flagged burnout risk.", people:[{name:"James Okafor",role:"Design Lead"},{name:"Priya Kapoor",role:"UX Designer"},{name:"Dean Walsh",role:"Service Designer"},{name:"Lena Müller",role:"UX Researcher"},{name:"Chris Park",role:"UI Designer"},{name:"Raj Patel",role:"UI Developer"}], history:{delivery:[80,70,60],morale:[75,60,55],satisfaction:[80,78,82]} },
+      { id:3, name:"Research & Insights", lead:"Priya Sharma", delivery:"on-track", morale:"critical", satisfaction:"at-risk", updated:"2026-03-28", notes:"Morale impacted by restructure uncertainty.", people:[{name:"Priya Sharma",role:"Research Lead"},{name:"David Kim",role:"Senior Researcher"},{name:"Mia Johnson",role:"Content Designer"},{name:"Aisha Osei",role:"Design Researcher"}], history:{delivery:[88,85,82],morale:[75,55,30],satisfaction:[82,70,60]} }
+    ];
+    let checkins = {};
+
+    function persist() {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify({projects, teams, checkins})); } catch(e) {}
+    }
+    function loadPersisted() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved.projects) {
+          const defs = projects.slice();
+          projects = saved.projects.map(p => Object.assign({}, defs.find(d => d.id === p.id) || {}, p));
+        }
+        if (saved.teams) {
+          const defs = teams.slice();
+          teams = saved.teams.map(t => Object.assign({}, defs.find(d => d.id === t.id) || {}, t));
+        }
+        if (saved.checkins) checkins = Object.assign({}, saved.checkins);
+      } catch(e) {}
+    }
+
+    function overallStatus(item) {
+      if ([item.delivery,item.morale,item.satisfaction].includes("critical")) return "critical";
+      if ([item.delivery,item.morale,item.satisfaction].includes("at-risk"))  return "at-risk";
+      return "on-track";
+    }
+    function isStale(item) { return (TODAY - new Date(item.updated)) / 86400000 > 7; }
+    function formatDate(iso) {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleDateString("en-GB", {day:"numeric",month:"short",year:"2-digit"});
+    }
+    function relativeDate(iso) {
+      const diff = Math.floor((TODAY - new Date(iso)) / 86400000);
+      if (diff === 0) return "today";
+      if (diff === 1) return "yesterday";
+      if (diff < 7)  return `${diff}d ago`;
+      if (diff < 14) return "last week";
+      return formatDate(iso);
+    }
+    function initials(name) { return name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
+    function avatarColor(name) {
+      let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))%AVATAR_PALETTE.length;
+      return AVATAR_PALETTE[h];
+    }
+    function ragPill(label, s) {
+      return `<span class="rag-pill" style="background:${STATUS_BG[s]};color:${STATUS_TEXT[s]};"><span class="rag-dot" style="background:${STATUS_COLOR[s]};"></span>${label || STATUS_LABEL[s]}</span>`;
+    }
+    function avatarStackSmall(people, max=4) {
+      const show = people.slice(0, max);
+      const rest = people.length - show.length;
+      return show.map(p => `<span class="avatar-sm" style="background:${avatarColor(p.name)}" title="${p.name}">${initials(p.name)}</span>`).join("")
+        + (rest > 0 ? `<span class="avatar-sm" style="background:var(--grey-dark)">+${rest}</span>` : "");
+    }
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg; t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2800);
+    }
+    function statusScore(s) { return s==="on-track"?90:s==="at-risk"?55:20; }
+
+    function moraleSparkline(item) {
+      const pts = [...(item.history?.morale || []), statusScore(item.morale)];
+      if (pts.length < 2) return "<span style='color:var(--grey-dark);'>—</span>";
+      const W=64, H=22, PAD=2;
+      const min=Math.min(...pts), max=Math.max(...pts), range=max-min||1;
+      const coords = pts.map((v,i) => {
+        const x = PAD + (i/(pts.length-1))*(W-PAD*2);
+        const y = PAD + (1-(v-min)/range)*(H-PAD*2);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(" ");
+      const color = STATUS_COLOR[item.morale];
+      return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><polyline points="${coords}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    }
+
+    // ── Sort ──────────────────────────────────────────────────────────
+    let sortCol = "name", sortDir = 1;
+    const RANK = { "on-track":0, "at-risk":1, "critical":2 };
+
+    function setSort(col) {
+      sortDir = (sortCol === col) ? -sortDir : 1;
+      sortCol = col;
+      renderTable();
+    }
+
+    function sortedTeams(arr) {
+      return [...arr].sort((a,b) => {
+        let av, bv;
+        if (sortCol === "status") { av=RANK[overallStatus(a)]; bv=RANK[overallStatus(b)]; }
+        else if (["delivery","morale","satisfaction"].includes(sortCol)) { av=RANK[a[sortCol]]; bv=RANK[b[sortCol]]; }
+        else if (sortCol === "updated") { av=a.updated||""; bv=b.updated||""; }
+        else { av=(a[sortCol]||"").toLowerCase(); bv=(b[sortCol]||"").toLowerCase(); }
+        return (av<bv?-1:av>bv?1:0)*sortDir;
+      });
+    }
+
+    // ── Render ────────────────────────────────────────────────────────
+    function renderTable() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const status = document.getElementById("statusFilter").value;
+
+      let filtered = teams.filter(t => {
+        const ms = t.name.toLowerCase().includes(search) || t.lead.toLowerCase().includes(search)
+          || t.people.some(x => x.name.toLowerCase().includes(search));
+        return ms && (!status || overallStatus(t) === status);
+      });
+      filtered = sortedTeams(filtered);
+
+      // Sort arrows
+      document.querySelectorAll(".tbl thead th").forEach(th => {
+        const id = th.id.replace("th-","");
+        const arrow = th.querySelector(".sort-arrow");
+        if (!arrow) return;
+        th.classList.toggle("sort-active", sortCol === id);
+        arrow.textContent = sortCol === id ? (sortDir===1?" ↑":" ↓") : " ↕";
+        arrow.style.opacity = sortCol === id ? "1" : "0.3";
+      });
+
+      // Stat chips
+      const counts = {"on-track":0,"at-risk":0,"critical":0};
+      teams.forEach(t => counts[overallStatus(t)]++);
+      document.getElementById("statChips").innerHTML = `
+        <div class="stat-chip"><span class="stat-chip-num">${teams.length}</span> total</div>
+        <div class="stat-chip" style="background:rgba(45,184,31,0.15);border-color:rgba(45,184,31,0.3);"><span class="stat-chip-num" style="color:#2DB81F;">${counts["on-track"]}</span> healthy</div>
+        <div class="stat-chip" style="background:rgba(212,160,23,0.15);border-color:rgba(212,160,23,0.3);"><span class="stat-chip-num" style="color:#D4A017;">${counts["at-risk"]}</span> at risk</div>
+        <div class="stat-chip" style="background:rgba(184,31,45,0.15);border-color:rgba(184,31,45,0.3);"><span class="stat-chip-num" style="color:#B81F2D;">${counts["critical"]}</span> critical</div>`;
+
+      const tbody = document.getElementById("tableBody");
+      const empty = document.getElementById("emptyState");
+      if (filtered.length === 0) { tbody.innerHTML=""; empty.style.display=""; return; }
+      empty.style.display = "none";
+
+      tbody.innerHTML = filtered.map(t => {
+        const overall = overallStatus(t);
+        const stale   = isStale(t);
+        const key     = "team-" + t.id;
+        const allCI   = checkins[key] || [];
+        const membersWithCI = new Set(allCI.map(c => c.person)).size;
+        const ciPct   = t.people.length > 0 ? Math.round((membersWithCI/t.people.length)*100) : 0;
+
+        return `<tr onclick="openDrawer(${t.id})">
+          <td>
+            <div class="cell-name">${t.name}</div>
+            <div class="cell-lead">${t.lead}</div>
+          </td>
+          <td class="hide-mobile">
+            <span class="status-badge" style="background:${STATUS_BG[overall]};color:${STATUS_TEXT[overall]};">${STATUS_LABEL[overall]}</span>
+          </td>
+          <td class="hide-mobile">${ragPill("", t.delivery)}</td>
+          <td class="hide-mobile">${ragPill("", t.morale)}</td>
+          <td class="hide-mobile">${ragPill("", t.satisfaction)}</td>
+          <td>
+            <div style="display:flex;align-items:center;">${avatarStackSmall(t.people)}</div>
+            <div style="font-size:0.68rem;color:var(--grey-dark);margin-top:2px;">${t.people.length} members</div>
+          </td>
+          <td class="hide-mobile">
+            <div style="font-size:0.78rem;font-weight:600;color:var(--primary);">${allCI.length} logged</div>
+            <div class="ci-bar-wrap"><div class="ci-bar-fill" style="width:${ciPct}%;"></div></div>
+            <div style="font-size:0.65rem;color:var(--grey-dark);margin-top:2px;">${membersWithCI}/${t.people.length} members</div>
+          </td>
+          <td class="hide-mobile">${moraleSparkline(t)}</td>
+          <td>
+            <span style="${stale?"color:#D4A017;font-weight:600;":""}">${relativeDate(t.updated)}</span>
+            ${stale?`<div style="font-size:0.68rem;color:#D4A017;">⚠ Overdue</div>`:""}
+          </td>
+          <td class="actions" onclick="event.stopPropagation()">
+            <button class="action-btn" title="Edit" onclick="openEditModal(${t.id})">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button class="action-btn" title="Update status" onclick="openUpdateModal(${t.id})">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </td>
+        </tr>`;
+      }).join("");
+    }
+
+    function clearFilters() {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("statusFilter").value = "";
+      renderTable();
+    }
+
+    // ── Drawer ────────────────────────────────────────────────────────
+    function openDrawer(id) {
+      const t = teams.find(x => x.id === id);
+      if (!t) return;
+      const overall = overallStatus(t);
+      const key = "team-" + id;
+
+      document.getElementById("drawerTitle").textContent = t.name;
+      document.getElementById("drawerBadge").innerHTML =
+        `<span class="status-badge" style="background:rgba(255,255,255,0.18);color:white;font-size:0.75rem;">${STATUS_LABEL[overall]}</span>`;
+
+      const dims = [["delivery","Delivery"],["morale","Team Morale"],["satisfaction","Stakeholder Satisfaction"]];
+      let body = `<div class="row g-2 mb-1">
+        ${dims.map(([d,label]) => `
+          <div class="col-4">
+            <div class="dim-card" style="background:${STATUS_BG[t[d]]};">
+              <div style="width:10px;height:10px;border-radius:50%;background:${STATUS_COLOR[t[d]]};margin:0 auto 4px;"></div>
+              <div style="font-size:0.72rem;font-weight:700;color:${STATUS_TEXT[t[d]]};">${STATUS_LABEL[t[d]]}</div>
+              <div style="font-size:0.62rem;color:var(--grey-very-dark);margin-top:1px;">${label}</div>
+            </div>
+          </div>`).join("")}
+      </div>`;
+
+      if (t.notes) body += `
+        <div class="p-3 rounded-3 my-3" style="background:var(--grey-very-light);border-left:3px solid var(--accent2-dark);">
+          <div style="font-size:0.7rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Notes</div>
+          <p style="font-size:0.85rem;color:var(--grey-very-dark);margin:0;">${t.notes}</p>
+        </div>`;
+
+      // Team wellbeing — each member + their last check-in
+      body += `<div class="section-title">Team wellbeing (${t.people.length} members)</div>`;
+      body += t.people.map(person => {
+        const personCI = (checkins[key]||[]).filter(c => c.person === person.name);
+        const last = personCI[personCI.length-1];
+        return `<div class="person-row">
+          <div class="avatar-md" style="background:${avatarColor(person.name)};">${initials(person.name)}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:0.83rem;color:var(--primary);">${person.name}</div>
+            <div style="font-size:0.7rem;color:var(--grey-dark);">${person.role}</div>
+          </div>
+          ${last
+            ? `<div style="text-align:right;">
+                <span class="ci-bubble" style="background:${CI_BG[last.feeling]};color:${CI_TEXT[last.feeling]};">${CI_EMOJI[last.feeling]} ${CI_LABEL[last.feeling]}</span>
+                <div style="font-size:0.65rem;color:var(--grey-dark);margin-top:2px;">${relativeDate(last.date)}</div>
+               </div>`
+            : `<span style="font-size:0.7rem;color:var(--grey-dark);">No check-in yet</span>`}
+        </div>`;
+      }).join("");
+
+      // Check-in log
+      const allCI = (checkins[key]||[]).slice().reverse().slice(0,5);
+      body += `<div class="section-title" style="margin-top:1.25rem;">Recent check-ins (${(checkins[key]||[]).length})</div>`;
+      if (allCI.length === 0) {
+        body += `<p style="font-size:0.82rem;color:var(--grey-dark);text-align:center;padding:1rem 0;">No check-ins recorded yet.</p>`;
+      } else {
+        body += allCI.map(c => `
+          <div class="checkin-item">
+            <span style="font-size:1.1rem;">${CI_EMOJI[c.feeling]}</span>
+            <div>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--grey-very-dark);">${c.person||"Anonymous"} — <span style="background:${CI_BG[c.feeling]};color:${CI_TEXT[c.feeling]};padding:1px 7px;border-radius:50px;font-size:0.7rem;">${CI_LABEL[c.feeling]}</span></div>
+              ${c.note?`<div style="font-size:0.78rem;color:var(--grey-dark);margin-top:2px;">"${c.note}"</div>`:""}
+              <div style="font-size:0.68rem;color:var(--grey-dark);margin-top:2px;">${formatDate(c.date)}</div>
+            </div>
+          </div>`).join("");
+      }
+
+      document.getElementById("drawerBody").innerHTML = body;
+      document.getElementById("drawerDeleteBtn").onclick = () => deleteTeam(id);
+      document.getElementById("drawerEditBtn").onclick   = () => { closeDrawer(); setTimeout(()=>openEditModal(id),50); };
+      document.getElementById("drawerUpdateBtn").onclick = () => { closeDrawer(); setTimeout(()=>openUpdateModal(id),50); };
+
+      document.getElementById("drawer").classList.add("open");
+      document.getElementById("drawerBackdrop").classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDrawer() {
+      document.getElementById("drawer").classList.remove("open");
+      document.getElementById("drawerBackdrop").classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    function deleteTeam(id) {
+      if (!confirm("Delete this team? This can't be undone.")) return;
+      const idx = teams.findIndex(t => t.id === id);
+      if (idx !== -1) teams.splice(idx, 1);
+      delete checkins["team-" + id];
+      persist();
+      closeDrawer();
+      renderTable();
+      showToast("Team deleted.");
+    }
+
+    function openUpdateModal(id) {
+      const t = teams.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById("modalItem").innerHTML = teams.map(x =>
+        `<option value="${x.id}" ${x.id===id?"selected":""}>${x.name}</option>`).join("");
+      document.getElementById("modalDelivery").value     = t.delivery;
+      document.getElementById("modalMorale").value       = t.morale;
+      document.getElementById("modalSatisfaction").value = t.satisfaction;
+      document.getElementById("modalNotes").value        = t.notes || "";
+      new bootstrap.Modal(document.getElementById("updateModal")).show();
+    }
+
+    function submitUpdate() {
+      const id = parseInt(document.getElementById("modalItem").value);
+      const t  = teams.find(x => x.id === id);
+      if (!t) return;
+      t.delivery     = document.getElementById("modalDelivery").value;
+      t.morale       = document.getElementById("modalMorale").value;
+      t.satisfaction = document.getElementById("modalSatisfaction").value;
+      t.notes        = document.getElementById("modalNotes").value.trim();
+      t.updated      = TODAY.toISOString().split("T")[0];
+      persist();
+      bootstrap.Modal.getInstance(document.getElementById("updateModal")).hide();
+      renderTable();
+      showToast("Status updated.");
+    }
+
+    function openEditModal(id) {
+      const t = teams.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById("editId").value    = id;
+      document.getElementById("editName").value  = t.name;
+      document.getElementById("editLead").value  = t.lead;
+      document.getElementById("editNotes").value = t.notes || "";
+      document.getElementById("editPeopleList").innerHTML = "";
+      t.people.forEach(p => addEditPersonRow(p.name, p.role));
+      document.getElementById("editError").style.display = "none";
+      new bootstrap.Modal(document.getElementById("editModal")).show();
+    }
+
+    function addEditPersonRow(name="", role="") {
+      const div = document.createElement("div");
+      div.className = "d-flex gap-2 align-items-center person-edit-row";
+      div.innerHTML = `
+        <input type="text" class="edit-person-name" placeholder="Name" value="${name}" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
+        <input type="text" class="edit-person-role" placeholder="Role" value="${role}" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
+        <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--grey-dark);cursor:pointer;padding:4px;font-size:1rem;">✕</button>`;
+      document.getElementById("editPeopleList").appendChild(div);
+    }
+
+    function submitEdit() {
+      const id    = parseInt(document.getElementById("editId").value);
+      const t     = teams.find(x => x.id === id);
+      const name  = document.getElementById("editName").value.trim();
+      const lead  = document.getElementById("editLead").value.trim();
+      const errEl = document.getElementById("editError");
+      if (!name || !lead) { errEl.textContent="Name and lead are required."; errEl.style.display=""; return; }
+      errEl.style.display = "none";
+      t.name  = name;
+      t.lead  = lead;
+      t.notes = document.getElementById("editNotes").value.trim();
+      t.people = [...document.querySelectorAll(".person-edit-row")].map(row => ({
+        name: row.querySelector(".edit-person-name").value.trim(),
+        role: row.querySelector(".edit-person-role").value.trim()
+      })).filter(x => x.name);
+      persist();
+      bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+      renderTable();
+      showToast("Team updated.");
+    }
+
+    function openAddModal() {
+      document.getElementById("addName").value  = "";
+      document.getElementById("addLead").value  = "";
+      document.getElementById("addNotes").value = "";
+      document.getElementById("addPeopleList").innerHTML = "";
+      document.getElementById("addError").style.display = "none";
+      new bootstrap.Modal(document.getElementById("addModal")).show();
+    }
+
+    function addAddPersonRow() {
+      const div = document.createElement("div");
+      div.className = "d-flex gap-2 align-items-center add-person-row";
+      div.innerHTML = `
+        <input type="text" class="add-person-name" placeholder="Name" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
+        <input type="text" class="add-person-role" placeholder="Role" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
+        <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--grey-dark);cursor:pointer;padding:4px;font-size:1rem;">✕</button>`;
+      document.getElementById("addPeopleList").appendChild(div);
+    }
+
+    function submitAdd() {
+      const name  = document.getElementById("addName").value.trim();
+      const lead  = document.getElementById("addLead").value.trim();
+      const errEl = document.getElementById("addError");
+      if (!name || !lead) { errEl.textContent="Name and lead are required."; errEl.style.display=""; return; }
+      errEl.style.display = "none";
+      const newId = Math.max(0, ...teams.map(t=>t.id)) + 1;
+      teams.push({
+        id: newId, name, lead,
+        delivery:     document.getElementById("addDelivery").value,
+        morale:       document.getElementById("addMorale").value,
+        satisfaction: document.getElementById("addSatisfaction").value,
+        notes:        document.getElementById("addNotes").value.trim(),
+        updated:      TODAY.toISOString().split("T")[0],
+        people: [...document.querySelectorAll(".add-person-row")].map(row => ({
+          name: row.querySelector(".add-person-name").value.trim(),
+          role: row.querySelector(".add-person-role").value.trim()
+        })).filter(x => x.name),
+        history: {delivery:[],morale:[],satisfaction:[]}
+      });
+      persist();
+      bootstrap.Modal.getInstance(document.getElementById("addModal")).hide();
+      renderTable();
+      showToast("Team added.");
+    }
+
+    function exportCSV() {
+      const rows = [["Name","Lead","Overall","Delivery","Morale","Satisfaction","Members","Last Updated","Notes"]];
+      teams.forEach(t => rows.push([t.name,t.lead,STATUS_LABEL[overallStatus(t)],STATUS_LABEL[t.delivery],STATUS_LABEL[t.morale],STATUS_LABEL[t.satisfaction],t.people.length,t.updated,t.notes||""]));
+      const csv  = rows.map(r => r.map(c=>`"${c}"`).join(",")).join("\n");
+      const blob = new Blob([csv],{type:"text/csv"});
+      Object.assign(document.createElement("a"),{href:URL.createObjectURL(blob),download:`teams-${TODAY.toISOString().split("T")[0]}.csv`}).click();
+      showToast(`Exported ${teams.length} teams.`);
+    }
+
+    loadPersisted();
+    renderTable();
+  </script>
+</body>
+</html>
