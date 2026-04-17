@@ -5,123 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teams – Cognizant Project Health</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    @font-face { font-family: "Gellix-Regular";         src: url("fonts/Gellix-Regular.woff") format("woff");         font-weight: normal; font-style: normal; }
-    @font-face { font-family: "Gellix-RegularItalic";   src: url("fonts/Gellix-RegularItalic.woff") format("woff");   font-weight: normal; font-style: normal; }
-    @font-face { font-family: "Gellix-Light";           src: url("fonts/Gellix-Light.woff") format("woff");           font-weight: normal; font-style: normal; }
-    @font-face { font-family: "Gellix-LightItalic";     src: url("fonts/Gellix-LightItalic.woff") format("woff");     font-weight: normal; font-style: normal; }
-    @font-face { font-family: "Gellix-SemiBold";        src: url("fonts/Gellix-SemiBold.woff") format("woff");        font-weight: normal; font-style: normal; }
-    @font-face { font-family: "Gellix-SemiBoldItalic";  src: url("fonts/Gellix-SemiBoldItalic.woff") format("woff");  font-weight: normal; font-style: normal; }
-
-    :root {
-      --primary:           #000048;
-      --accent1-dark:      #2E308E;
-      --accent2-dark:      #2F78C4;
-      --accent3-dark:      #06C7CC;
-      --accent1-medium:    #7373D8;
-      --accent2-medium:    #6AA2DC;
-      --accent3-medium:    #26EFE9;
-      --accent1-light:     #85A0F9;
-      --grey-very-dark:    #53565A;
-      --grey-dark:         #97999B;
-      --grey-medium:       #D0D0CE;
-      --grey-light:        #E8E8E6;
-      --grey-very-light:   #F7F7F5;
-      --container-background: #F0F8FF;
-      --link-color:        #2F78C4;
-      --accent:            #7373D8;
-      --accent2:           #06C7CC;
-    }
-
-    body { -webkit-font-smoothing: antialiased; font-size: 14px; background: var(--container-background); word-break: break-word; overflow-x: hidden; font-family: "Gellix-Regular", sans-serif; color: var(--primary); margin: 0; }
-    .cog-nav { background: var(--primary); padding: 0 1.5rem; height: 56px; display: flex; align-items: center; justify-content: space-between; }
-    .cog-brand { color: white; font-weight: 800; font-size: 1rem; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    .cog-brand:hover { color: rgba(255,255,255,0.85); }
-    .alpha-pill { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.5px; background: rgba(133,160,249,0.15); color: #85A0F9; border: 1px solid rgba(133,160,249,0.35); padding: 1px 8px; border-radius: 50px; text-transform: uppercase; }
-    .nav-links { display: flex; gap: 4px; align-items: center; }
-    .nav-lnk { color: rgba(255,255,255,0.55); font-size: 0.88rem; text-decoration: none; padding: 5px 14px; border-radius: 50px; transition: all 0.15s; white-space: nowrap; }
-    .nav-lnk:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.08); }
-    .nav-lnk.active { color: rgba(255,255,255,0.95); background: rgba(255,255,255,0.14); }
-    .nav-ghost { color: rgba(255,255,255,0.55); font-size: 0.78rem; text-decoration: none; padding: 4px 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50px; margin-left: 8px; transition: all 0.15s; white-space: nowrap; }
-    .nav-ghost:hover { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.5); }
-
-    .page-header { background: linear-gradient(94deg, rgb(201,105,113) -7.47%, rgb(91,61,150) 15.24%, rgb(32,16,116) 34.36%, rgb(11,88,170) 74.77%, rgb(0,0,72) 100.44%); border-top: 1px solid rgb(106,162,220); color: white; padding: 2rem 0 1.75rem; }
-    .breadcrumb-nav { font-size: 0.75rem; opacity: 0.55; margin-bottom: 0.5rem; }
-    .breadcrumb-nav a { color: white; text-decoration: none; }
-    .stat-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 50px; padding: 5px 14px; font-size: 0.8rem; }
-    .stat-chip-num { font-weight: 800; font-size: 1rem; }
-    .btn-add { background: var(--accent3-medium); color: var(--primary); border: none; border-radius: 50px; padding: 8px 20px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; font-family: "Gellix-SemiBold", sans-serif; }
-    .btn-add:hover { background: var(--accent3-dark); }
-
-    .toolbar { background: white; border-bottom: 1px solid var(--grey-light); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
-    .toolbar input, .toolbar select { border: 1px solid var(--grey-dark); border-radius: 50px; padding: 0.4rem 1rem; font-size: 0.85rem; background: #f5f5f2; outline: none; font-family: "Gellix-Regular", sans-serif; color: var(--primary); }
-    .toolbar input:focus, .toolbar select:focus { border-color: var(--accent1-medium); background: white; box-shadow: 0 0 0 2px rgba(115,115,216,0.15); }
-    #searchInput { width: 220px; }
-    .btn-export { background: transparent; border: 2px solid var(--primary); border-radius: 50px; padding: 6px 16px; font-size: 0.82rem; cursor: pointer; color: var(--primary); transition: all 0.2s; font-family: "Gellix-SemiBold", sans-serif; }
-    .btn-export:hover { border-color: var(--accent1-medium); color: var(--accent1-medium); }
-
-    .table-card { background: white; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,72,0.07); overflow: hidden; margin: 1.5rem; }
-    .tbl { width: 100%; border-collapse: collapse; }
-    .tbl thead th { background: var(--grey-very-light); padding: 11px 14px; font-size: 0.74rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--grey-light); white-space: nowrap; cursor: pointer; user-select: none; font-family: "Gellix-SemiBold", sans-serif; }
-    .tbl thead th.no-sort { cursor: default; }
-    .tbl thead th:not(.no-sort):hover { color: var(--primary); }
-    .tbl thead th.sort-active { color: var(--primary); }
-    .tbl tbody tr { border-bottom: 1px solid var(--grey-very-light); cursor: pointer; transition: background 0.1s; }
-    .tbl tbody tr:hover { background: var(--grey-very-light); }
-    .tbl tbody tr:last-child { border-bottom: none; }
-    .tbl tbody td { padding: 13px 14px; font-size: 0.84rem; vertical-align: middle; }
-    .tbl tbody td.actions { text-align: right; white-space: nowrap; }
-
-    .cell-name { font-weight: 700; color: var(--primary); font-size: 0.88rem; }
-    .cell-lead { font-size: 0.72rem; color: var(--grey-dark); margin-top: 1px; }
-    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
-    .rag-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-    .rag-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .avatar-sm { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: white; border: 2px solid white; margin-left: -6px; }
-    .avatar-sm:first-child { margin-left: 0; }
-    .action-btn { background: transparent; border: none; padding: 5px 7px; border-radius: 6px; cursor: pointer; color: var(--grey-dark); transition: background 0.12s, color 0.12s; }
-    .action-btn:hover { background: var(--grey-light); color: var(--primary); }
-    .stale-text { color: #D4A017; }
-    .ci-bar-wrap { width: 60px; height: 4px; background: var(--grey-light); border-radius: 2px; margin-top: 4px; overflow: hidden; }
-    .ci-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; }
-
-    /* Drawer */
-    .drawer-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1040; opacity: 0; transition: opacity 0.25s; pointer-events: none; }
-    .drawer-backdrop.open { opacity: 1; pointer-events: all; }
-    .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: 420px; background: white; z-index: 1050; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); box-shadow: -4px 0 24px rgba(0,0,72,0.12); }
-    .drawer.open { transform: translateX(0); }
-    .drawer-header { background: var(--primary); color: white; padding: 1.1rem 1.25rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-shrink: 0; }
-    .drawer-title { font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
-    .drawer-close { background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 2px; font-size: 1.1rem; }
-    .drawer-close:hover { color: white; }
-    .drawer-body { flex: 1; overflow-y: auto; padding: 1.25rem; }
-    .drawer-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--grey-light); display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
-    .btn-delete { margin-right: auto; background: transparent; border: none; color: #B81F2D; font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 6px 0; }
-    .btn-delete:hover { text-decoration: underline; }
-    .btn-sm-outline { background: transparent; border: 1px solid var(--grey-light); border-radius: 50px; padding: 6px 14px; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
-    .btn-sm-outline:hover { border-color: var(--primary); color: var(--primary); }
-    .btn-sm-solid { background: var(--accent1-medium); color: white; border: none; border-radius: 50px; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; font-family: "Gellix-SemiBold", sans-serif; }
-    .btn-sm-solid:hover { background: var(--accent1-light); }
-
-    .dim-card { border-radius: 10px; padding: 0.85rem; text-align: center; }
-    .section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--grey-dark); margin-bottom: 0.75rem; margin-top: 1.25rem; }
-    .person-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--grey-very-light); margin-bottom: 6px; }
-    .avatar-md { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: white; flex-shrink: 0; }
-    .ci-bubble { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; }
-    .checkin-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; background: var(--grey-very-light); border-radius: 10px; margin-bottom: 6px; }
-
-    .empty-state { text-align: center; padding: 3.5rem 1rem; color: var(--grey-dark); }
-    .empty-state svg { opacity: 0.3; margin-bottom: 1rem; }
-    #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; background: var(--primary); color: white; padding: 0.7rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; opacity: 0; transform: translateY(8px); transition: opacity 0.25s, transform 0.25s; pointer-events: none; }
-    #toast.show { opacity: 1; transform: translateY(0); }
-
-    @media (max-width: 768px) {
-      .hide-mobile { display: none !important; }
-      .table-card { margin: 0.75rem; }
-      .drawer { width: 100vw; }
-      #searchInput { width: 150px; }
-    }
-  </style>
+   <link rel="stylesheet" href="cognizant-framework.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -132,7 +17,7 @@
       <span class="alpha-pill">Alpha</span>
     </a>
     <div class="nav-links d-none d-sm-flex">
-      <a href="index.html"    class="nav-lnk">Dashboard</a>
+      <a href="index.html" class="nav-lnk">Dashboard</a>
       <a href="projects.html" class="nav-lnk">Projects</a>
       <a href="teams.html"    class="nav-lnk active">Teams</a>
       <a href="member.html"   class="nav-ghost">My view ↗</a>
@@ -294,7 +179,7 @@
             <div class="col-md-8"><label class="form-label fw-bold">Team name</label>
               <input type="text" id="addName" placeholder="e.g. Service Design Team" style="border-radius:8px!important;"></div>
             <div class="col-md-4"><label class="form-label fw-bold">Lead</label>
-              <input type="text" id="addLead" placeholder="e.g. James Okafor" style="border-radius:8px!important;"></div>
+              <input type="text" id="addLead" placeholder="e.g. Jamie Foster" style="border-radius:8px!important;"></div>
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-4"><label class="form-label fw-bold">Delivery</label>
@@ -341,16 +226,16 @@
     const AVATAR_PALETTE = ["#7373D8","#2F78C4","#06C7CC","#2E308E","#26C4AB","#B56AC4","#4A90D9","#D4A017"];
 
     let projects = [
-      { id:1, name:"Kyndryl Account Refresh", lead:"Sarah Mitchell", delivery:"on-track", morale:"at-risk", satisfaction:"on-track", updated:"2026-04-14", notes:"Sprint 4 on schedule.", start:"2026-01-06", end:"2026-06-30", milestones:[], people:[{name:"Sarah Mitchell",role:"Design Lead"},{name:"Marcus Chen",role:"Senior UX Designer"},{name:"Aisha Patel",role:"UX Researcher"},{name:"Tom Hughes",role:"UI Designer"}], history:{delivery:[90,85,82],morale:[80,70,65],satisfaction:[92,88,85]} },
-      { id:2, name:"HSBC Digital Transformation", lead:"James Okafor", delivery:"at-risk", morale:"critical", satisfaction:"at-risk", updated:"2026-04-11", notes:"Scope creep impacting delivery.", start:"2025-11-01", end:"2026-07-31", milestones:[], people:[{name:"James Okafor",role:"Design Lead"},{name:"Priya Kapoor",role:"UX Designer"},{name:"Dean Walsh",role:"Service Designer"},{name:"Lena Müller",role:"UX Researcher"},{name:"Chris Park",role:"UI Designer"}], history:{delivery:[80,65,55],morale:[70,50,30],satisfaction:[75,65,55]} },
-      { id:3, name:"Vodafone UX Overhaul", lead:"Priya Sharma", delivery:"on-track", morale:"on-track", satisfaction:"on-track", updated:"2026-04-13", notes:"Strong progress.", start:"2026-02-01", end:"2026-08-31", milestones:[], people:[{name:"Priya Sharma",role:"Design Lead"},{name:"David Kim",role:"Senior UX Designer"},{name:"Fatima Al-Rashid",role:"UI Designer"}], history:{delivery:[85,88,92],morale:[82,85,90],satisfaction:[80,85,92]} },
-      { id:4, name:"NatWest Design System", lead:"Tom Brennan", delivery:"critical", morale:"at-risk", satisfaction:"critical", updated:"2026-04-02", notes:"Blockers on dev handoff.", start:"2025-10-01", end:"2026-05-31", milestones:[], people:[{name:"Tom Brennan",role:"Design Lead"},{name:"Sophie Clarke",role:"Design Systems Designer"},{name:"Raj Patel",role:"UI Developer"}], history:{delivery:[75,60,30],morale:[70,60,50],satisfaction:[70,50,20]} },
-      { id:5, name:"BT Consumer Portal", lead:"Aisha Osei", delivery:"at-risk", morale:"on-track", satisfaction:"at-risk", updated:"2026-04-12", notes:"Delayed 2 weeks due to API dependency.", start:"2026-01-15", end:"2026-09-30", milestones:[], people:[{name:"Aisha Osei",role:"Design Lead"},{name:"Ben Taylor",role:"UX Designer"},{name:"Mia Johnson",role:"Content Designer"},{name:"Yuki Tanaka",role:"UX Researcher"}], history:{delivery:[88,75,65],morale:[85,85,88],satisfaction:[80,70,60]} }
+      { id:1, name:"Meridian Account Refresh", lead:"Alex Morgan", delivery:"on-track", morale:"at-risk", satisfaction:"on-track", updated:"2026-04-14", notes:"Sprint 4 on schedule.", start:"2026-01-06", end:"2026-06-30", milestones:[], people:[{name:"Alex Morgan",role:"Design Lead"},{name:"Sam Chen",role:"Senior UX Designer"},{name:"Jordan Lee",role:"UX Researcher"},{name:"Riley Hughes",role:"UI Designer"}], history:{delivery:[90,85,82],morale:[80,70,65],satisfaction:[92,88,85]} },
+      { id:2, name:"Helix Digital Transformation", lead:"Jamie Foster", delivery:"at-risk", morale:"critical", satisfaction:"at-risk", updated:"2026-04-11", notes:"Scope creep impacting delivery.", start:"2025-11-01", end:"2026-07-31", milestones:[], people:[{name:"Jamie Foster",role:"Design Lead"},{name:"Dana Kapoor",role:"UX Designer"},{name:"Drew Walsh",role:"Service Designer"},{name:"Morgan Miller",role:"UX Researcher"},{name:"Taylor Park",role:"UI Designer"}], history:{delivery:[80,65,55],morale:[70,50,30],satisfaction:[75,65,55]} },
+      { id:3, name:"Apex UX Overhaul", lead:"Cameron Shaw", delivery:"on-track", morale:"on-track", satisfaction:"on-track", updated:"2026-04-13", notes:"Strong progress.", start:"2026-02-01", end:"2026-08-31", milestones:[], people:[{name:"Cameron Shaw",role:"Design Lead"},{name:"Avery Kim",role:"Senior UX Designer"},{name:"Casey Davis",role:"UI Designer"}], history:{delivery:[85,88,92],morale:[82,85,90],satisfaction:[80,85,92]} },
+      { id:4, name:"Vertex Design System", lead:"Sam Brennan", delivery:"critical", morale:"at-risk", satisfaction:"critical", updated:"2026-04-02", notes:"Blockers on dev handoff.", start:"2025-10-01", end:"2026-05-31", milestones:[], people:[{name:"Sam Brennan",role:"Design Lead"},{name:"Quinn Clarke",role:"Design Systems Designer"},{name:"Lee Patel",role:"UI Developer"}], history:{delivery:[75,60,30],morale:[70,60,50],satisfaction:[70,50,20]} },
+      { id:5, name:"Nexus Consumer Portal", lead:"Jordan Osei", delivery:"at-risk", morale:"on-track", satisfaction:"at-risk", updated:"2026-04-12", notes:"Delayed 2 weeks due to API dependency.", start:"2026-01-15", end:"2026-09-30", milestones:[], people:[{name:"Jordan Osei",role:"Design Lead"},{name:"Blake Taylor",role:"UX Designer"},{name:"Skyler Johnson",role:"Content Designer"},{name:"Robin Tanaka",role:"UX Researcher"}], history:{delivery:[88,75,65],morale:[85,85,88],satisfaction:[80,70,60]} }
     ];
     let teams = [
-      { id:1, name:"CX Design Team", lead:"Sarah Mitchell", delivery:"on-track", morale:"on-track", satisfaction:"on-track", updated:"2026-04-14", notes:"Team performing well across all accounts.", people:[{name:"Sarah Mitchell",role:"Design Lead"},{name:"Marcus Chen",role:"Senior UX Designer"},{name:"Aisha Patel",role:"UX Researcher"},{name:"Tom Hughes",role:"UI Designer"},{name:"Fatima Al-Rashid",role:"UI Designer"},{name:"Yuki Tanaka",role:"UX Researcher"},{name:"Ben Taylor",role:"UX Designer"},{name:"Sophie Clarke",role:"Design Systems Designer"}], history:{delivery:[85,88,92],morale:[82,85,88],satisfaction:[80,85,90]} },
-      { id:2, name:"Product Design Team", lead:"James Okafor", delivery:"at-risk", morale:"at-risk", satisfaction:"on-track", updated:"2026-04-11", notes:"Stretched capacity. Two members flagged burnout risk.", people:[{name:"James Okafor",role:"Design Lead"},{name:"Priya Kapoor",role:"UX Designer"},{name:"Dean Walsh",role:"Service Designer"},{name:"Lena Müller",role:"UX Researcher"},{name:"Chris Park",role:"UI Designer"},{name:"Raj Patel",role:"UI Developer"}], history:{delivery:[80,70,60],morale:[75,60,55],satisfaction:[80,78,82]} },
-      { id:3, name:"Research & Insights", lead:"Priya Sharma", delivery:"on-track", morale:"critical", satisfaction:"at-risk", updated:"2026-03-28", notes:"Morale impacted by restructure uncertainty.", people:[{name:"Priya Sharma",role:"Research Lead"},{name:"David Kim",role:"Senior Researcher"},{name:"Mia Johnson",role:"Content Designer"},{name:"Aisha Osei",role:"Design Researcher"}], history:{delivery:[88,85,82],morale:[75,55,30],satisfaction:[82,70,60]} }
+      { id:1, name:"CX Design Team", lead:"Alex Morgan", delivery:"on-track", morale:"on-track", satisfaction:"on-track", updated:"2026-04-14", notes:"Team performing well across all accounts.", people:[{name:"Alex Morgan",role:"Design Lead"},{name:"Sam Chen",role:"Senior UX Designer"},{name:"Jordan Lee",role:"UX Researcher"},{name:"Riley Hughes",role:"UI Designer"},{name:"Casey Davis",role:"UI Designer"},{name:"Robin Tanaka",role:"UX Researcher"},{name:"Blake Taylor",role:"UX Designer"},{name:"Quinn Clarke",role:"Design Systems Designer"}], history:{delivery:[85,88,92],morale:[82,85,88],satisfaction:[80,85,90]} },
+      { id:2, name:"Product Design Team", lead:"Jamie Foster", delivery:"at-risk", morale:"at-risk", satisfaction:"on-track", updated:"2026-04-11", notes:"Stretched capacity. Two members flagged burnout risk.", people:[{name:"Jamie Foster",role:"Design Lead"},{name:"Dana Kapoor",role:"UX Designer"},{name:"Drew Walsh",role:"Service Designer"},{name:"Morgan Miller",role:"UX Researcher"},{name:"Taylor Park",role:"UI Designer"},{name:"Lee Patel",role:"UI Developer"}], history:{delivery:[80,70,60],morale:[75,60,55],satisfaction:[80,78,82]} },
+      { id:3, name:"Research & Insights", lead:"Cameron Shaw", delivery:"on-track", morale:"critical", satisfaction:"at-risk", updated:"2026-03-28", notes:"Morale impacted by restructure uncertainty.", people:[{name:"Cameron Shaw",role:"Research Lead"},{name:"Avery Kim",role:"Senior Researcher"},{name:"Skyler Johnson",role:"Content Designer"},{name:"Jordan Osei",role:"Design Researcher"}], history:{delivery:[88,85,82],morale:[75,55,30],satisfaction:[82,70,60]} }
     ];
     let checkins = {};
 
