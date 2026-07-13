@@ -85,8 +85,12 @@ function persist() { saveData({ projects, teams, checkins }); }
     }
 
     // ── Sort state ────────────────────────────────────────────────────
-    let sortCol = "name", sortDir = 1;
+    // Default view leads with what needs action: critical first, then at-risk,
+    // with stale (overdue) items bumped up within each band. Clicking any column
+    // header switches to a normal ascending/descending sort on that column.
+    let sortCol = "priority", sortDir = -1;
     const RANK = { "on-track": 0, "at-risk": 1, "critical": 2 };
+    function priorityScore(item) { return RANK[overallStatus(item)] * 2 + (isStale(item) ? 1 : 0); }
 
     function setSort(col) {
       sortDir = (sortCol === col) ? -sortDir : 1;
@@ -97,7 +101,8 @@ function persist() { saveData({ projects, teams, checkins }); }
     function sortedProjects(arr) {
       return [...arr].sort((a, b) => {
         let av, bv;
-        if (sortCol === "status")   { av = RANK[overallStatus(a)]; bv = RANK[overallStatus(b)]; }
+        if (sortCol === "priority") { av = priorityScore(a); bv = priorityScore(b); }
+        else if (sortCol === "status")   { av = RANK[overallStatus(a)]; bv = RANK[overallStatus(b)]; }
         else if (sortCol === "delivery" || sortCol === "morale" || sortCol === "satisfaction") { av = RANK[a[sortCol]]; bv = RANK[b[sortCol]]; }
         else if (sortCol === "end" || sortCol === "updated") { av = a[sortCol] || ""; bv = b[sortCol] || ""; }
         else { av = (a[sortCol]||"").toLowerCase(); bv = (b[sortCol]||"").toLowerCase(); }
@@ -389,10 +394,21 @@ function persist() { saveData({ projects, teams, checkins }); }
       const div = document.createElement("div");
       div.className = "d-flex gap-2 align-items-center person-edit-row";
       div.innerHTML = `
-        <input type="text" class="edit-person-name" placeholder="Name" value="${name}" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
+        <input type="text" class="edit-person-name" placeholder="Name" value="${name}" list="knownPeopleList" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
         <input type="text" class="edit-person-role" placeholder="Role" value="${role}" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
         <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--grey-dark);cursor:pointer;padding:4px;font-size:1rem;">✕</button>`;
       document.getElementById("editPeopleList").appendChild(div);
+    }
+
+    // Suggests existing people by name as you type in an "Add person" field —
+    // pure autocomplete convenience, not a real directory (typing a new name
+    // still just creates a new person, same as before).
+    function renderPeopleDatalist() {
+      const dl = document.getElementById("knownPeopleList");
+      if (!dl) return;
+      const names = new Set();
+      [...projects, ...teams].forEach(it => (it.people || []).forEach(p => names.add(p.name)));
+      dl.innerHTML = [...names].sort().map(n => `<option value="${n}">`).join("");
     }
 
     function submitEdit() {
@@ -411,6 +427,7 @@ function persist() { saveData({ projects, teams, checkins }); }
         role: row.querySelector(".edit-person-role").value.trim()
       })).filter(x => x.name);
       persist();
+      renderPeopleDatalist();
       bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
       renderTable();
       showToast("Project updated.");
@@ -430,7 +447,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       const div = document.createElement("div");
       div.className = "d-flex gap-2 align-items-center add-person-row";
       div.innerHTML = `
-        <input type="text" class="add-person-name" placeholder="Name" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
+        <input type="text" class="add-person-name" placeholder="Name" list="knownPeopleList" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
         <input type="text" class="add-person-role" placeholder="Role" style="flex:1;border-radius:8px!important;font-size:0.85rem;">
         <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--grey-dark);cursor:pointer;padding:4px;font-size:1rem;">✕</button>`;
       document.getElementById("addPeopleList").appendChild(div);
@@ -458,6 +475,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       DIMENSIONS.forEach(d => { newItem[d] = "on-track"; newItem.history[d] = []; });
       projects.push(newItem);
       persist();
+      renderPeopleDatalist();
       bootstrap.Modal.getInstance(document.getElementById("addModal")).hide();
       renderTable();
       showToast("Project added.");
@@ -486,7 +504,10 @@ function persist() { saveData({ projects, teams, checkins }); }
       document.querySelectorAll(".ci-btn").forEach(b => b.className = "ci-btn");
       document.getElementById("checkinTargetId").value = projectId;
       const p = projects.find(x => x.id === projectId);
-      document.getElementById("checkinSubtitle").textContent = p ? p.name : "Share how you're feeling";
+      const lastCI = (checkins["project-" + projectId] || []).slice(-1)[0];
+      document.getElementById("checkinSubtitle").textContent = p
+        ? p.name + (lastCI ? ` · last check-in ${relativeDate(lastCI.date)}` : " · no check-ins yet")
+        : "Share how you're feeling";
       document.getElementById("checkinNote").value = "";
       document.getElementById("checkinError").style.display = "none";
       document.getElementById("checkinOnBehalf").checked = false;
@@ -582,6 +603,7 @@ function persist() { saveData({ projects, teams, checkins }); }
     });
     loadPersisted();
     renderTable();
+    renderPeopleDatalist();
     // Open drawer if arriving from dashboard deep-link
     try {
       const pending = sessionStorage.getItem("openDrawer");

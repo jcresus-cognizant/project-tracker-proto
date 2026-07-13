@@ -89,9 +89,10 @@ function persistShared() { saveData({ projects, teams, checkins }); }
     // ── Member dashboard ──────────────────────────────────────────────
     function renderMemberDashboard() {
       const app = document.getElementById("app");
+      const mine = personItems(CURRENT_USER, projects, teams);
       const items = [
-        ...projects.map(p => ({ it: p, type: "project" })),
-        ...teams.map(t => ({ it: t, type: "team" }))
+        ...mine.projects.map(p => ({ it: p, type: "project" })),
+        ...mine.teams.map(t => ({ it: t, type: "team" }))
       ];
       const total     = items.length;
       const completed = items.filter(({ it, type }) => isCompleted(type + "-" + it.id)).length;
@@ -113,8 +114,8 @@ function persistShared() { saveData({ projects, teams, checkins }); }
           <!-- Progress -->
           <div class="checkin-progress">
             <div class="cp-top">
-              <span class="cp-label">Check-ins submitted</span>
-              <span class="cp-count">${completed} of ${total} completed</span>
+              <span class="cp-label">Sharing helps your lead support you</span>
+              <span class="cp-count">${completed} of ${total} shared</span>
             </div>
             <div class="cp-bar"><div class="cp-fill" style="width:${pct}%;"></div></div>
           </div>
@@ -122,7 +123,9 @@ function persistShared() { saveData({ projects, teams, checkins }); }
           <!-- Accordion of projects & teams -->
           <div class="section-label">Your projects &amp; teams</div>
           <div class="acc-list">
-            ${items.map(({ it, type }) => renderAccordionRow(it, type)).join("")}
+            ${items.length
+              ? items.map(({ it, type }) => renderAccordionRow(it, type)).join("")
+              : `<p style="color:var(--grey-dark);font-size:0.85rem;">You're not assigned to any projects or teams yet.</p>`}
           </div>
 
         </div>`;
@@ -184,7 +187,7 @@ function persistShared() { saveData({ projects, teams, checkins }); }
           <label class="d-flex align-items-center gap-2 mb-2" style="font-size:0.78rem;color:var(--grey-dark);cursor:pointer;">
             <input type="checkbox" id="anon-${key}"> Submit anonymously
           </label>
-          <textarea id="noteInput-${key}" rows="2" placeholder="Anything you'd like to add? (optional)"
+          <textarea id="noteInput-${key}" rows="2" placeholder="What's changed since last time? (optional)"
             style="width:100%;border-radius:10px;border:1px solid var(--grey-light);padding:0.6rem 0.85rem;font-size:0.85rem;resize:none;"></textarea>
           <div class="d-flex justify-content-end mt-2">
             <button onclick="submitVote('${key}','${type}',${item.id})"

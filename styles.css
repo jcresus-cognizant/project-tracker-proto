@@ -67,11 +67,13 @@ body {
 /* ── Navbar ─────────────────────────────────────────────────────── */
 .cog-nav {
   background: var(--primary);
-  padding: 0 1.5rem;
-  height: 56px;
+  padding: 0.5rem 1.5rem;
+  min-height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 .cog-brand {
   color: white;
@@ -81,6 +83,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .cog-brand:hover { color: rgba(255,255,255,0.85); }
 
@@ -96,7 +100,7 @@ body {
   text-transform: uppercase;
 }
 
-.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-links { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 
 .nav-lnk {
   color: rgba(255,255,255,0.55);
@@ -783,6 +787,13 @@ body {
   font-weight: 700; font-size: 0.82rem; color: white; flex-shrink: 0;
 }
 
+/* ── Settings — health area grid ────────────────────────────────── */
+.dim-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .hide-mobile   { display: none !important; }
@@ -792,6 +803,7 @@ body {
   .tl-label-col, .tl-label   { flex: 0 0 110px; }
   .tl-status-col, .tl-status { flex: 0 0 60px; }
   .tl-ms-label   { display: none; }
+  .dim-grid      { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 576px) {
@@ -867,12 +879,24 @@ body {
 .btn-checkin-hero .cih-icon { font-size: 1.2rem; line-height: 1; font-weight: 700; }
 .btn-checkin-hero.big { padding: 1rem 2.4rem; font-size: 1.12rem; }
 
-/* Portfolio trend panel */
+/* Portfolio trend panel — matches .focus-panel (shadow, radius, padding) and
+   stretches to the same height as it via the row's default flex-stretch, with
+   its chart centered in whatever extra vertical space that creates. */
 .trend-panel {
   background: #fff;
   border: 1px solid var(--grey-light);
   border-radius: 14px;
   padding: 1rem 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,72,0.06);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.trend-chart-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Manager focus panel */
@@ -882,6 +906,9 @@ body {
   border-radius: 14px;
   padding: 1rem 1.25rem;
   box-shadow: 0 1px 4px rgba(0,0,72,0.06);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .focus-head {
   display: flex;
@@ -916,22 +943,23 @@ body {
 .focus-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
+  flex: 1;
 }
 .focus-row {
   width: 100%;
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto;
+  grid-template-columns: 60px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: var(--grey-very-light);
   border: 1px solid var(--grey-light);
-  border-left: 4px solid var(--grey-dark);
-  border-radius: 10px;
+  border-left: 3px solid var(--grey-dark);
+  border-radius: 8px;
   color: inherit;
   cursor: pointer;
   font-family: inherit;
-  padding: 10px 12px;
+  padding: 6px 10px;
   text-align: left;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
@@ -946,43 +974,42 @@ body {
   color: #fff;
   display: inline-flex;
   justify-content: center;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-family: "Gellix-SemiBold", sans-serif;
-  padding: 3px 9px;
+  padding: 2px 7px;
 }
 .focus-main {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
+}
+.focus-name-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 .focus-name {
   color: var(--primary);
   font-family: "Gellix-SemiBold", sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
 }
 .focus-meta {
   color: var(--grey-dark);
-  font-size: 0.72rem;
-}
-.focus-reasons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.focus-reasons span {
-  background: #fff;
-  border: 1px solid var(--grey-light);
-  border-radius: 50px;
-  color: var(--grey-very-dark);
   font-size: 0.68rem;
-  font-family: "Gellix-SemiBold", sans-serif;
-  padding: 1px 8px;
+}
+.focus-reason {
+  color: var(--grey-very-dark);
+  font-size: 0.71rem;
+}
+.focus-reason-more {
+  color: var(--grey-dark);
 }
 .focus-next {
   color: var(--accent2-dark);
   font-family: "Gellix-SemiBold", sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   white-space: nowrap;
 }
 .focus-more {

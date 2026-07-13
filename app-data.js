@@ -485,7 +485,7 @@ function trendChartHTML(history) {
   if (maxLen < 2) {
     return `<p style="font-size:0.8rem;color:var(--grey-dark);margin:0;">Not enough history yet — the trend builds up after a couple of check-ins.</p>`;
   }
-  const W = 520, H = 150, PAD = { t: 14, r: 14, b: 14, l: 30 };
+  const W = 520, H = 200, PAD = { t: 14, r: 14, b: 14, l: 30 };
   const xAt = (i, n) => PAD.l + (n <= 1 ? 0 : (i / (n - 1)) * (W - PAD.l - PAD.r));
   const yAt = v => PAD.t + (1 - v / 100) * (H - PAD.t - PAD.b);
   const grid = [0, 50, 100].map(v =>

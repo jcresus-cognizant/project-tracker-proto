@@ -12,18 +12,20 @@
 
     function render() {
       document.getElementById("activeCount").textContent = active.length;
-      document.getElementById("dimList").innerHTML = DIMENSION_CATALOG.map(d => {
-        const on = active.includes(d.key);
-        return `<label style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid ${on ? d.color : "var(--grey-light)"};border-radius:12px;padding:13px 15px;margin-bottom:10px;cursor:pointer;">
-          <input type="checkbox" ${on ? "checked" : ""} onchange="toggleDim('${d.key}')" style="width:18px;height:18px;flex-shrink:0;">
-          <span style="width:12px;height:12px;border-radius:50%;background:${d.color};flex-shrink:0;"></span>
-          <span style="flex:1;min-width:0;">
-            <span style="font-weight:700;color:var(--primary);font-size:0.9rem;">${d.label}</span>
-            <span style="display:block;font-size:0.74rem;color:var(--grey-dark);">${d.hint}</span>
-          </span>
-          ${on ? `<span style="font-size:0.7rem;font-weight:700;color:${d.color};">ON</span>` : ""}
-        </label>`;
-      }).join("");
+      document.getElementById("dimList").innerHTML = `<div class="dim-grid">
+        ${DIMENSION_CATALOG.map(d => {
+          const on = active.includes(d.key);
+          return `<label style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid ${on ? d.color : "var(--grey-light)"};border-radius:12px;padding:13px 15px;cursor:pointer;">
+            <input type="checkbox" ${on ? "checked" : ""} onchange="toggleDim('${d.key}')" style="width:18px;height:18px;flex-shrink:0;">
+            <span style="width:12px;height:12px;border-radius:50%;background:${d.color};flex-shrink:0;"></span>
+            <span style="flex:1;min-width:0;">
+              <span style="font-weight:700;color:var(--primary);font-size:0.9rem;">${d.label}</span>
+              <span style="display:block;font-size:0.74rem;color:var(--grey-dark);">${d.hint}</span>
+            </span>
+            ${on ? `<span style="font-size:0.7rem;font-weight:700;color:${d.color};">ON</span>` : ""}
+          </label>`;
+        }).join("")}
+      </div>`;
       updateSaveBtn();
     }
 

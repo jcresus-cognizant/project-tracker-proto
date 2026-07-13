@@ -124,7 +124,7 @@ function listPageModalsHTML(cfg) {
           </div>
           <div class="mb-2">
             <label class="form-label fw-bold">Anything else? <span style="font-weight:400;color:var(--grey-dark);">(optional)</span></label>
-            <textarea id="checkinNote" rows="2" placeholder="Any context, blockers, or highlights…"></textarea>
+            <textarea id="checkinNote" rows="2" placeholder="What's changed since your last check-in? Blockers, wins, or context…"></textarea>
           </div>
           <div id="checkinError" class="text-danger" style="font-size:0.82rem;display:none;"></div>
         </div>

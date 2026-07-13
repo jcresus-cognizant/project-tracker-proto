@@ -112,7 +112,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       const items = [
         { key: "on-track", label: "on track"           },
         { key: "at-risk",  label: "need attention"      },
-        { key: "critical", label: "need urgent help"    }
+        { key: "critical", label: "need urgent action"  }
       ];
 
       document.getElementById("summaryCards").innerHTML = `
@@ -197,6 +197,16 @@ function persist() { saveData({ projects, teams, checkins }); }
       const shown = items.slice(0, 5);
       const SEV = { 3: "#B81F2D", 2: "#D4A017", 1: "#97999B" };
       const SEV_LABEL = { 3: "Urgent", 2: "Watch", 1: "Stale" };
+
+      // When there's nothing to flag, let the trend panel take the full row
+      // instead of leaving an empty column beside it.
+      const attentionCol = document.getElementById("attentionCol");
+      const trendCol = document.getElementById("trendCol");
+      if (attentionCol && trendCol) {
+        attentionCol.className = items.length ? "col-lg-7" : "d-none";
+        trendCol.className = items.length ? "col-lg-5" : "col-lg-12";
+      }
+
       if (!items.length) {
         el.innerHTML = "";
         return;
@@ -211,18 +221,25 @@ function persist() { saveData({ projects, teams, checkins }); }
             <button class="focus-clear" onclick="activeStatusFilter='';renderSummary(projects);renderAccounts();">Show all accounts</button>
           </div>
           <div class="focus-list">
-            ${shown.map(a => `
+            ${shown.map(a => {
+              // Lead with whichever reason is actually worst (critical > declining >
+              // stale), not just whichever happened to be scanned first.
+              const topReason = a.reasons.find(r => r.includes("critical"))
+                || a.reasons.find(r => r.includes("declining"))
+                || a.reasons[0];
+              return `
               <button class="focus-row" onclick="openDetail(${a.id},'${a.type}')" style="border-left-color:${SEV[a.severity]};">
                 <span class="focus-priority" style="background:${SEV[a.severity]};">${SEV_LABEL[a.severity]}</span>
                 <span class="focus-main">
-                  <span class="focus-name">${a.name}</span>
-                  <span class="focus-meta">${a.type === "team" ? "Team" : "Project"} · ${a.lead}</span>
-                  <span class="focus-reasons">
-                    ${a.reasons.slice(0, 3).map(r => `<span>${r}</span>`).join("")}
+                  <span class="focus-name-line">
+                    <span class="focus-name">${a.name}</span>
+                    <span class="focus-meta">${a.type === "team" ? "Team" : "Project"} · ${a.lead}</span>
                   </span>
+                  <span class="focus-reason">${topReason}${a.reasons.length > 1 ? ` <span class="focus-reason-more">+${a.reasons.length - 1} more</span>` : ""}</span>
                 </span>
                 <span class="focus-next">${attentionAction(a)}</span>
-              </button>`).join("")}
+              </button>`;
+            }).join("")}
           </div>
           ${items.length > shown.length ? `<div class="focus-more">${items.length - shown.length} more item${items.length - shown.length === 1 ? "" : "s"} in the account list below</div>` : ""}
         </div>`;
@@ -476,10 +493,6 @@ function persist() { saveData({ projects, teams, checkins }); }
                 <div style="font-size:0.62rem;color:var(--grey-very-dark);margin-top:1px;">${label}</div>
               </div>
             </div>`).join("")}
-        </div>
-        <div class="mb-3">
-          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--grey-dark);margin-bottom:6px;">4-week trend</div>
-          <div style="background:var(--grey-very-light);border-radius:10px;padding:10px 10px 6px;overflow:hidden;">${trendChart(item)}</div>
         </div>`;
 
       if (item.notes) body += `
@@ -851,11 +864,22 @@ function persist() { saveData({ projects, teams, checkins }); }
       const row = document.createElement("div");
       row.className = "person-row d-flex gap-2 align-items-center";
       row.innerHTML = `
-        <input type="text" placeholder="Full name" style="flex:1.2;">
+        <input type="text" placeholder="Full name" list="knownPeopleList" style="flex:1.2;">
         <input type="text" placeholder="Role (e.g. UX Designer)" style="flex:1.5;">
         <button type="button" onclick="this.closest('.person-row').remove()" style="background:none;border:none;color:var(--grey-dark);font-size:1.1rem;cursor:pointer;padding:0 4px;">✕</button>`;
       list.appendChild(row);
       row.querySelector("input").focus();
+    }
+
+    // Suggests existing people by name as you type in an "Add person" field —
+    // pure autocomplete convenience, not a real directory (typing a new name
+    // still just creates a new person, same as before).
+    function renderPeopleDatalist() {
+      const dl = document.getElementById("knownPeopleList");
+      if (!dl) return;
+      const names = new Set();
+      [...projects, ...teams].forEach(it => (it.people || []).forEach(p => names.add(p.name)));
+      dl.innerHTML = [...names].sort().map(n => `<option value="${n}">`).join("");
     }
 
     function submitAdd() {
@@ -897,6 +921,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       if (addType === "team") newItem.members = people.length;
       data.push(newItem);
       persist();
+      renderPeopleDatalist();
 
       bootstrap.Modal.getInstance(document.getElementById("addModal")).hide();
 
@@ -990,7 +1015,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       const row  = document.createElement("div");
       row.className = "person-row d-flex gap-2 align-items-center";
       row.innerHTML = `
-        <input type="text" placeholder="Full name" value="${name}" style="flex:1.2;">
+        <input type="text" placeholder="Full name" value="${name}" list="knownPeopleList" style="flex:1.2;">
         <input type="text" placeholder="Role" value="${role}" style="flex:1.5;">
         <button type="button" onclick="this.closest('.person-row').remove()" style="background:none;border:none;color:var(--grey-dark);font-size:1.1rem;cursor:pointer;padding:0 4px;">✕</button>`;
       list.appendChild(row);
@@ -1023,6 +1048,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       if (type === "team") item.members = item.people.length;
 
       persist();
+      renderPeopleDatalist();
       bootstrap.Modal.getInstance(modal).hide();
       renderView();
       showToast("Changes saved.");
@@ -1100,3 +1126,4 @@ function persist() { saveData({ projects, teams, checkins }); }
     loadPersisted();
     renderView();
     initChart();
+    renderPeopleDatalist();

@@ -36,11 +36,9 @@
             <span id="lastUpdatedLabel"></span>
           </p>
         </div>
-        <div class="hero-actions">
-          <button class="btn-checkin-hero" onclick="openCheckinModal()">
-            <span class="cih-icon">＋</span> Check in
-          </button>
+        <div class="hero-actions" id="heroActions">
           <div class="hero-secondary" id="leadHeaderActions">
+            <button class="btn-add" onclick="openCheckinModal()">＋ Check in</button>
             <button class="btn-hdr-ghost" onclick="openAddModal()">Add new</button>
             <button class="btn-hdr-ghost" onclick="exportCSV()">Export CSV</button>
           </div>
@@ -58,16 +56,18 @@
     <!-- Positive empty state (shown when nothing needs attention) -->
     <div class="container mt-4"><div id="emptyState"></div></div>
 
-    <!-- Manager focus list -->
+    <!-- Manager focus list + portfolio trend, side by side on wide screens -->
     <div class="container mt-4">
-      <div id="attentionFeed"></div>
-    </div>
-
-    <!-- Portfolio health trend -->
-    <div class="container mt-4">
-      <div class="trend-panel">
-        <div class="section-title" style="margin-top:0;">Portfolio health trend</div>
-        <div id="portfolioTrend"></div>
+      <div class="row g-3">
+        <div class="col-lg-7" id="attentionCol">
+          <div id="attentionFeed"></div>
+        </div>
+        <div class="col-lg-5" id="trendCol">
+          <div class="trend-panel">
+            <div class="section-title" style="margin-top:0;">Portfolio health trend</div>
+            <div id="portfolioTrend" class="trend-chart-wrap"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -224,7 +224,7 @@
 
           <div class="mb-2">
             <label class="form-label fw-bold">Anything else? <span style="font-weight:400;color:var(--grey-dark);">(optional)</span></label>
-            <textarea id="checkinNote" rows="2" placeholder="Any context, blockers, or highlights..."></textarea>
+            <textarea id="checkinNote" rows="2" placeholder="What's changed since your last check-in? Blockers, wins, or context…"></textarea>
           </div>
           <div id="checkinError" class="text-danger" style="font-size:0.82rem;display:none;"></div>
         </div>
@@ -236,6 +236,8 @@
     </div>
   </div>
 
+  <!-- Autocomplete suggestions for "Name" fields — populated from existing people -->
+  <datalist id="knownPeopleList"></datalist>
 
 <script src="app-data.js"></script>
 <script src="scripts-dashboard.js"></script>

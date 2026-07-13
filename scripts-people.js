@@ -36,13 +36,67 @@ function loadPersisted() {
 
     function render() { renderRoster(); renderDetail(); }
 
+    // Synthesises 1:1 prep material from data that already exists elsewhere in
+    // the app (capacity flag, assigned item health/trends, check-in history) —
+    // no new data model, just surfacing what's already tracked in one place.
+    // Severity: 3 = raise this, 2 = worth mentioning, 1 = minor context.
+    function personConcerns(name) {
+      const concerns = [];
+
+      const wb = wellbeing[name];
+      if (wb?.level === "at-capacity") concerns.push({ severity: 3, text: `Flagged themselves at capacity on ${formatDate(wb.date)}` });
+      else if (wb?.level === "stretched") concerns.push({ severity: 2, text: `Flagged themselves stretched on ${formatDate(wb.date)}` });
+
+      const mine = personItems(name, projects, teams);
+      [...mine.projects, ...mine.teams].forEach(it => {
+        const overall = overallStatus(it);
+        if (overall === "critical") concerns.push({ severity: 3, text: `${it.name} is critical` });
+        else if (overall === "at-risk") concerns.push({ severity: 2, text: `${it.name} is at risk` });
+        DIMENSIONS.forEach(dim => {
+          if (dimensionTrend(it.history, dim) === "declining") {
+            concerns.push({ severity: 2, text: `${dimLabel(dim)} declining on ${it.name}` });
+          }
+        });
+      });
+
+      const history = personCheckinHistory(checkins, name);
+      if (!history.length) {
+        concerns.push({ severity: 1, text: "Hasn't submitted a check-in yet" });
+      } else {
+        const recent = history.slice(0, 3);
+        DIMENSIONS.forEach(dim => {
+          const strugglingCount = recent.filter(c => c[dim] === "struggling").length;
+          if (strugglingCount >= 2) {
+            concerns.push({ severity: 3, text: `Repeated concern: ${dimLabel(dim)} rated struggling in ${strugglingCount} of their last ${recent.length} check-ins` });
+          } else if (recent[0][dim] === "struggling") {
+            concerns.push({ severity: 2, text: `${dimLabel(dim)} rated struggling in their most recent check-in` });
+          }
+        });
+        if (recent[0].note) concerns.push({ severity: 1, text: `Last note: "${recent[0].note}"` });
+      }
+
+      const seen = new Set();
+      return concerns
+        .filter(c => (seen.has(c.text) ? false : (seen.add(c.text), true)))
+        .sort((a, b) => b.severity - a.severity)
+        .slice(0, 5);
+    }
+    function worstSeverity(concerns) { return concerns.reduce((m, c) => Math.max(m, c.severity), 0); }
+
     function renderRoster() {
       const el = document.getElementById("roster");
-      el.innerHTML = rosterPeople(projects, teams).map(p => {
+      // Roster leads with who most needs your attention (same triage principle
+      // as the dashboard's "Needs attention" feed), not alphabetical order.
+      const people = rosterPeople(projects, teams)
+        .map(p => ({ ...p, _severity: worstSeverity(personConcerns(p.name)) }))
+        .sort((a, b) => b._severity - a._severity || a.name.localeCompare(b.name));
+      const ACCENT = { 3: "#B81F2D", 2: "#D4A017" };
+      el.innerHTML = people.map(p => {
         const wb = wellbeing[p.name];
         const lvl = wb ? wellbeingLevel(wb.level) : null;
         const active = selectedPerson === p.name;
-        return `<div onclick="selectPerson('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:10px;border:1px solid ${active ? "var(--primary)" : "var(--grey-light)"};background:${active ? "#f0f1f8" : "#fff"};margin-bottom:7px;">
+        const accent = ACCENT[p._severity] || "transparent";
+        return `<div onclick="selectPerson('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 11px 9px 9px;border-radius:10px;border:1px solid ${active ? "var(--primary)" : "var(--grey-light)"};border-left:4px solid ${accent};background:${active ? "#f0f1f8" : "#fff"};margin-bottom:7px;">
           <div class="avatar-sm" style="background:${avatarColor(p.name)};width:30px;height:30px;font-size:0.7rem;flex-shrink:0;">${initials(p.name)}</div>
           <div style="min-width:0;flex:1;">
             <div style="font-weight:600;font-size:0.84rem;color:var(--primary);">${p.name}</div>
@@ -67,6 +121,22 @@ function loadPersisted() {
       const wb = wellbeing[name];
       const lvl = wb ? wellbeingLevel(wb.level) : null;
       const history = personCheckinHistory(checkins, name);
+      const concerns = personConcerns(name);
+
+      const talkingPoints = concerns.length
+        ? `<div style="background:#fff;border:1px solid var(--grey-light);border-left:4px solid ${concerns[0].severity === 3 ? "#B81F2D" : "#D4A017"};border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+            <div style="font-size:0.7rem;font-weight:700;color:var(--grey-dark);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:8px;">Talking points for this 1:1</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              ${concerns.map(c => `<div style="display:flex;gap:8px;align-items:flex-start;font-size:0.84rem;color:var(--grey-very-dark);">
+                <span style="width:7px;height:7px;border-radius:50%;background:${c.severity === 3 ? "#B81F2D" : c.severity === 2 ? "#D4A017" : "#97999B"};margin-top:6px;flex-shrink:0;"></span>
+                <span>${c.text}</span>
+              </div>`).join("")}
+            </div>
+          </div>`
+        : `<div style="background:#e8f8e6;border:1px solid #bce8b4;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+            <div style="font-size:0.84rem;color:#1a6e12;font-weight:700;">Nothing flagged right now</div>
+            <div style="font-size:0.78rem;color:#2a7e22;margin-top:2px;">Good moment to check in on growth, career goals, or just say thanks.</div>
+          </div>`;
 
       const capacity = lvl
         ? `<span style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:${lvl.color};"><span style="width:10px;height:10px;border-radius:50%;background:${lvl.color};"></span>${lvl.label}</span> <span style="font-size:0.72rem;color:var(--grey-dark);">· self-reported ${formatDate(wb.date)}</span>`
@@ -100,6 +170,7 @@ function loadPersisted() {
             <div style="font-size:0.76rem;color:var(--grey-dark);">${person.roles.join(" · ")}</div>
           </div>
         </div>
+        ${talkingPoints}
         <div style="background:#fff;border:1px solid var(--grey-light);border-radius:12px;padding:12px 14px;margin-bottom:12px;">
           <div style="font-size:0.7rem;font-weight:700;color:var(--grey-dark);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;">Capacity</div>
           <div style="font-size:0.88rem;">${capacity}</div>
