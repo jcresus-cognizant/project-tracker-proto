@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings – Cognizant Project Health</title>
+  <link href="vendor/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="cognizant-framework.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="cog-nav">
+    <a class="cog-brand" href="dashboard.html">
+      Cognizant ProjectTracker
+      <span class="alpha-pill">Alpha</span>
+    </a>
+    <div class="nav-links d-none d-sm-flex">
+      <a href="dashboard.html" class="nav-lnk">Dashboard</a>
+      <a href="projects.html" class="nav-lnk">Projects</a>
+      <a href="teams.html"   class="nav-lnk">Teams</a>
+      <a href="people.html"  class="nav-lnk">People</a>
+      <a href="settings.html" class="nav-lnk active">Settings</a>
+      <a href="index.html"   class="nav-ghost">Switch role ↗</a>
+    </div>
+  </nav>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="container py-4">
+      <h1 style="font-size:1.75rem;font-weight:800;margin:0 0 0.25rem;">Health areas</h1>
+      <p class="mb-0" style="opacity:0.6;font-size:0.88rem;">Choose which areas your teams check in on (<span id="activeCount">3</span> active)</p>
+    </div>
+  </div>
+
+  <!-- Dimension list -->
+  <div class="container mt-4" style="max-width:680px;">
+    <div id="dimList"></div>
+    <div class="d-flex align-items-center gap-3 mt-3">
+      <button id="saveBtn" class="btn-add" onclick="saveSettings()" disabled style="opacity:0.5;cursor:not-allowed;">Save changes</button>
+      <span id="settingsMsg" style="opacity:0;transition:opacity 0.3s;font-size:0.85rem;color:var(--primary);font-weight:600;min-height:1.2em;"></span>
+    </div>
+    <p style="font-size:0.78rem;color:var(--grey-dark);margin-top:1rem;">
+      Turning an area on adds it to every check-in and dashboard. Existing projects start that area at On Track until their next check-in. You must keep at least one area. Changes apply once you press Save.
+    </p>
+  </div>
+  <div class="mb-5"></div>
+
+  <script src="vendor/bootstrap.bundle.min.js"></script>
+  <script src="app-data.js"></script>
+  <script src="scripts-settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects – Cognizant Project Health</title>
+  <link href="vendor/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="cognizant-framework.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+ <nav class="cog-nav">
+    <a class="cog-brand" href="dashboard.html">
+      Cognizant ProjectTracker
+      <span class="alpha-pill">Alpha</span>
+    </a>
+    <div class="nav-links d-none d-sm-flex">
+      <a href="dashboard.html" class="nav-lnk active">Dashboard</a>
+      <a href="projects.html" class="nav-lnk">Projects</a>
+      <a href="teams.html"   class="nav-lnk">Teams</a>
+      <a href="people.html"  class="nav-lnk">People</a>
+      <a href="settings.html" class="nav-lnk">Settings</a>
+      <a href="index.html"   class="nav-ghost">Switch role ↗</a>
+    </div>
+  </nav>
+
+  <!-- Page header (with summary strip) -->
+  <div class="page-header">
+    <div class="container py-4">
+      <div class="dash-hero">
+        <div style="color: white;min-width:0;">
+          <h1 class="mb-1" id="dashTitle" style="font-size: 1.75rem;">Project Health Dashboard</h1>
+          <p class="mb-0" style="opacity: 0.6; font-size: 0.88rem;">
+            <span id="lastUpdatedLabel"></span>
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn-checkin-hero" onclick="openCheckinModal()">
+            <span class="cih-icon">＋</span> Check in
+          </button>
+          <div class="hero-secondary" id="leadHeaderActions">
+            <button class="btn-hdr-ghost" onclick="openAddModal()">Add new</button>
+            <button class="btn-hdr-ghost" onclick="exportCSV()">Export CSV</button>
+          </div>
+        </div>
+      </div>
+      <div id="summaryCards" class="mt-4"></div>
+    </div>
+  </div>
+
+  <!-- Member simplified landing (shown only when role = member) -->
+  <div class="container mt-4" id="memberView" style="display:none;"></div>
+
+  <!-- Lead dashboard -->
+  <div id="leadView">
+    <!-- Positive empty state (shown when nothing needs attention) -->
+    <div class="container mt-4"><div id="emptyState"></div></div>
+
+    <!-- Manager focus list -->
+    <div class="container mt-4">
+      <div id="attentionFeed"></div>
+    </div>
+
+    <!-- Portfolio health trend -->
+    <div class="container mt-4">
+      <div class="trend-panel">
+        <div class="section-title" style="margin-top:0;">Portfolio health trend</div>
+        <div id="portfolioTrend"></div>
+      </div>
+    </div>
+
+    <!-- Health by account (collapsible groups with nested project cards) -->
+    <div class="container mt-4">
+      <div class="section-title" style="margin-top:0;color:var(--primary);">Health by account</div>
+      <div id="accountGroups"></div>
+    </div>
+
+    <div class="mb-5"></div>
+  </div>
+
+  <!-- Drawer backdrop -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+
+  <!-- Side drawer -->
+  <div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" tabindex="-1">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title" id="drawerTitle">—</div>
+        <div id="drawerBadge"></div>
+      </div>
+      <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">✕</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+    <div class="drawer-footer">
+      <button class="btn-delete" id="drawerDeleteBtn">Delete</button>
+      <button class="btn-sm-outline" id="drawerEditBtn">Edit</button>
+      <button class="btn-sm-solid" id="drawerUpdateBtn">Check in</button>
+    </div>
+  </div>
+
+
+
+  <!-- Add Project / Team Modal -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true" aria-label="Add">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: var(--primary); color: white; border-radius: 12px 12px 0 0;">
+          <h5 class="modal-title" id="addModalTitle">Add new project</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Type</label>
+            <div class="d-flex gap-2">
+              <button type="button" class="add-type-btn active" data-type="project" onclick="setAddType('project')">Project</button>
+              <button type="button" class="add-type-btn" data-type="team" onclick="setAddType('team')">Team</button>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="form-label fw-bold">Name</label>
+              <input type="text" id="addName" placeholder="e.g. Lloyds Banking Redesign">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Lead</label>
+              <input type="text" id="addLead" placeholder="e.g. Alex Morgan">
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">People</label>
+              <button type="button" class="btn btn-outline-dark" style="font-size:0.74rem;padding:3px 12px;border-radius:50px;" onclick="addPersonRow()">+ Add person</button>
+            </div>
+            <div id="addPeopleList" class="d-flex flex-column gap-2"></div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label fw-bold">Notes (optional)</label>
+            <textarea id="addNotes" rows="2" placeholder="Any context..."></textarea>
+          </div>
+          <div id="addError" class="text-danger" style="font-size:0.82rem;display:none;"></div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid var(--grey-light);">
+          <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-primary-action" onclick="submitAdd()">Add <span id="addTypeLabelBtn">project</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Details Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" aria-label="Edit details">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: var(--primary); color: white; border-radius: 12px 12px 0 0;">
+          <h5 class="modal-title" id="editModalTitle">Edit project</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="form-label fw-bold">Name</label>
+              <input type="text" id="editName">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Lead</label>
+              <input type="text" id="editLead">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Notes</label>
+            <textarea id="editNotes" rows="2"></textarea>
+          </div>
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">People</label>
+              <button type="button" class="btn btn-outline-dark" style="font-size:0.74rem;padding:3px 12px;border-radius:50px;" onclick="addEditPersonRow()">+ Add person</button>
+            </div>
+            <div id="editPeopleList" class="d-flex flex-column gap-2"></div>
+          </div>
+          <div id="editError" class="text-danger mt-2" style="font-size:0.82rem;display:none;"></div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--grey-light);">
+          <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-primary-action" onclick="submitEdit()">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Check-in Modal -->
+  <div class="modal fade" id="checkinModal" tabindex="-1" aria-hidden="true" aria-label="Check in">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(90deg, #2E308E, #2f78c4); color: white; border-radius: 12px 12px 0 0;">
+          <div>
+            <h5 class="modal-title mb-0">How's it going?</h5>
+            <small style="opacity:0.7;">Rate how each area is going right now</small>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-bold" style="font-size:0.82rem;">Submitting as</label>
+              <div id="checkinSelfDisplay" style="font-size:0.88rem;font-weight:600;color:var(--primary);padding:0.45rem 0.75rem;background:#f0f1f8;border-radius:8px;margin-bottom:0.5rem;">Alex Morgan</div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkinOnBehalf" onchange="toggleBehalfDropdown()">
+                <label class="form-check-label" for="checkinOnBehalf" style="font-size:0.78rem;color:var(--grey-dark);">On behalf of someone else</label>
+              </div>
+              <select id="checkinBehalfOf" style="display:none;margin-top:0.5rem;border-radius:8px!important;"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Project or team</label>
+              <select id="checkinItem" onchange="updateBehalfDropdown()"></select>
+            </div>
+          </div>
+
+          <p class="fw-bold mb-3" style="color:var(--primary);">How's each area feeling right now?</p>
+
+          <div class="d-flex flex-column gap-3 mb-4" id="ciRows"></div>
+
+          <div class="mb-2">
+            <label class="form-label fw-bold">Anything else? <span style="font-weight:400;color:var(--grey-dark);">(optional)</span></label>
+            <textarea id="checkinNote" rows="2" placeholder="Any context, blockers, or highlights..."></textarea>
+          </div>
+          <div id="checkinError" class="text-danger" style="font-size:0.82rem;display:none;"></div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid var(--grey-light);">
+          <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="checkinSubmitBtn" class="btn-primary-action" onclick="submitCheckin()" disabled>Submit check-in</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<script src="app-data.js"></script>
+<script src="scripts-dashboard.js"></script>
+  <script src="vendor/bootstrap.bundle.min.js"></script>
+  <div class="pb-4 text-center">
+    <button onclick="resetDemoData()" style="background:none;border:none;font-size:0.72rem;color:var(--grey-dark);cursor:pointer;opacity:0.55;text-decoration:underline;">Reset demo data</button>
+  </div>
+</body>
