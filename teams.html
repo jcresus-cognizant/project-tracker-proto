@@ -16,13 +16,16 @@
       Cognizant ProjectTracker
       <span class="alpha-pill">Alpha</span>
     </a>
+    <button class="mobile-nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" onclick="toggleMobileNav(this)">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-links d-none d-sm-flex">
       <a href="dashboard.html" class="nav-lnk">Dashboard</a>
       <a href="projects.html" class="nav-lnk">Projects</a>
       <a href="teams.html"    class="nav-lnk active">Teams</a>
       <a href="people.html"  class="nav-lnk">People</a>
       <a href="settings.html" class="nav-lnk">Settings</a>
-      <a href="index.html"   class="nav-ghost">Switch role ↗</a>
+      <a href="index.html"   class="nav-ghost">View as another role</a>
 
     </div>
   </nav>
@@ -55,12 +58,12 @@
         <option value="critical">Critical</option>
       </select>
     </div>
-    <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="btn-export" onclick="exportCSV()">⬇ Download report</button>
   </div>
 
   <!-- Table -->
   <div class="">
-    <table class="tbl">
+    <table class="tbl responsive-entity-table team-table">
       <thead>
         <tr>
           <th scope="col" tabindex="0" role="button" onclick="setSort('name')"         id="th-name">Team <span class="sort-arrow"></span></th>
@@ -70,7 +73,6 @@
           <th scope="col" tabindex="0" role="button" onclick="setSort('satisfaction')"  id="th-satisfaction" class="hide-mobile">Satisfaction <span class="sort-arrow"></span></th>
           <th scope="col" class="no-sort" id="th-members">Members</th>
           <th scope="col" class="no-sort hide-mobile" id="th-checkins">Check-ins</th>
-          <th scope="col" class="no-sort hide-mobile" id="th-sparkline">Health trend</th>
           <th scope="col" tabindex="0" role="button" onclick="setSort('updated')"       id="th-updated">Updated <span class="sort-arrow"></span></th>
           <th></th>
         </tr>
@@ -102,7 +104,7 @@
     <div class="drawer-footer">
       <button class="btn-delete" id="drawerDeleteBtn">Delete team</button>
       <button class="btn-sm-outline" id="drawerEditBtn">Edit</button>
-      <button class="btn-sm-solid" id="drawerUpdateBtn">Check in</button>
+      <button class="btn-sm-solid" id="drawerUpdateBtn">Submit update</button>
     </div>
   </div>
 

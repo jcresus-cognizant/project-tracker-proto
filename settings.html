@@ -16,13 +16,16 @@
       Cognizant ProjectTracker
       <span class="alpha-pill">Alpha</span>
     </a>
+    <button class="mobile-nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" onclick="toggleMobileNav(this)">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-links d-none d-sm-flex">
       <a href="dashboard.html" class="nav-lnk">Dashboard</a>
       <a href="projects.html" class="nav-lnk">Projects</a>
       <a href="teams.html"   class="nav-lnk">Teams</a>
       <a href="people.html"  class="nav-lnk">People</a>
       <a href="settings.html" class="nav-lnk active">Settings</a>
-      <a href="index.html"   class="nav-ghost">Switch role ↗</a>
+      <a href="index.html"   class="nav-ghost">View as another role</a>
     </div>
   </nav>
 
@@ -41,8 +44,8 @@
       <button id="saveBtn" class="btn-add" onclick="saveSettings()" disabled style="opacity:0.5;cursor:not-allowed;">Save changes</button>
       <span id="settingsMsg" style="opacity:0;transition:opacity 0.3s;font-size:0.85rem;color:var(--primary);font-weight:600;min-height:1.2em;"></span>
     </div>
-    <p style="font-size:0.78rem;color:var(--grey-dark);margin-top:1rem;">
-      Turning an area on adds it to every check-in and dashboard. Existing projects start that area at On Track until their next check-in. You must keep at least one area. Changes apply once you press Save.
+    <p class="settings-help">
+      Selected areas appear in every check-in and dashboard. New areas start as On Track until the next check-in. Keep at least one area selected.
     </p>
   </div>
   <div class="mb-5"></div>

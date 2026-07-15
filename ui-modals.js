@@ -97,8 +97,8 @@ function listPageModalsHTML(cfg) {
             </div>`;
 
   const checkinModal = `
-  <div class="modal fade" id="checkinModal" tabindex="-1" aria-hidden="true" aria-label="Check in">
-    <div class="modal-dialog modal-dialog-centered">
+  <div class="modal fade" id="checkinModal" tabindex="-1" aria-hidden="true" aria-label="Submit health update">
+    <div class="modal-dialog modal-dialog-centered checkin-modal-dialog">
       <div class="modal-content" style="border-radius:14px;border:none;">
         <div class="modal-header" style="background:linear-gradient(90deg,#2E308E,#2f78c4);color:white;border-radius:14px 14px 0 0;">
           <div>
@@ -130,7 +130,7 @@ function listPageModalsHTML(cfg) {
         </div>
         <div class="modal-footer" style="border-top:1px solid var(--grey-light);">
           <button class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-          <button id="checkinSubmitBtn" class="btn-primary-action" onclick="submitCheckin()" disabled>Submit check-in</button>
+          <button id="checkinSubmitBtn" class="btn-primary-action" onclick="submitCheckin()" disabled>Submit health update</button>
         </div>
       </div>
     </div>

@@ -31,6 +31,40 @@ function ciToStatus(feeling) {
   return CI_TO_STATUS[feeling] || "at-risk";
 }
 
+// Older seed entries use a single `feeling`; newer check-ins store one value
+// per health area. Collapse both shapes to a dependable summary for lists.
+function checkinFeeling(entry) {
+  if (!entry) return "okay";
+  if (entry.feeling && CI_TO_STATUS[entry.feeling]) return entry.feeling;
+  const values = [entry.delivery, entry.morale, entry.satisfaction].filter(Boolean);
+  if (values.includes("struggling")) return "struggling";
+  if (values.length && values.every(value => value === "good")) return "good";
+  return "okay";
+}
+
+function toggleMobileNav(button) {
+  const nav = button.closest(".cog-nav");
+  const links = nav && nav.querySelector(".nav-links");
+  if (!links) return;
+  const open = links.classList.toggle("open");
+  button.classList.toggle("open", open);
+  button.setAttribute("aria-expanded", String(open));
+  button.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+}
+
+document.addEventListener("click", event => {
+  document.querySelectorAll(".cog-nav .nav-links.open").forEach(links => {
+    if (links.closest(".cog-nav").contains(event.target)) return;
+    links.classList.remove("open");
+    const button = links.closest(".cog-nav").querySelector(".mobile-nav-toggle");
+    if (button) {
+      button.classList.remove("open");
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-label", "Open navigation");
+    }
+  });
+});
+
 // A history sparkline score for a status, so a check-in extends the trend line.
 function statusToScore(status) {
   return status === "on-track" ? 90 : status === "at-risk" ? 55 : 20;
@@ -479,13 +513,15 @@ const HEALTHY_SCORE = 75;
 // flagging on the chart so a lead can see WHEN the decline started.
 const SIGNIFICANT_DROP = 15;
 
-function trendChartHTML(history) {
+function trendChartHTML(history, options) {
+  options = options || {};
+  const labels = options.labels || [];
   const series = DIMENSIONS.map(dim => ({ dim, pts: (history && history[dim]) || [] }));
   const maxLen = Math.max(0, ...series.map(s => s.pts.length));
   if (maxLen < 2) {
     return `<p style="font-size:0.8rem;color:var(--grey-dark);margin:0;">Not enough history yet — the trend builds up after a couple of check-ins.</p>`;
   }
-  const W = 520, H = 200, PAD = { t: 14, r: 14, b: 14, l: 30 };
+  const W = 520, H = 200, PAD = { t: 14, r: 14, b: labels.length ? 28 : 14, l: 30 };
   const xAt = (i, n) => PAD.l + (n <= 1 ? 0 : (i / (n - 1)) * (W - PAD.l - PAD.r));
   const yAt = v => PAD.t + (1 - v / 100) * (H - PAD.t - PAD.b);
   const grid = [0, 50, 100].map(v =>
@@ -524,12 +560,16 @@ function trendChartHTML(history) {
     return `<polyline points="${coords}" fill="none" stroke="${DIM_COLOR[s.dim]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` +
            `<circle cx="${lx}" cy="${ly}" r="3" fill="${DIM_COLOR[s.dim]}"/>`;
   }).join("");
-  const legend = DIMENSIONS.map(dim =>
+  const xLabels = labels.map((label, index) => label
+    ? `<text x="${xAt(index, labels.length).toFixed(1)}" y="${H - 7}" font-size="8.5" fill="#7f8094" text-anchor="middle" font-family="sans-serif">${label}</text>`
+    : ""
+  ).join("");
+  const legend = options.showLegend === false ? "" : DIMENSIONS.map(dim =>
     `<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--grey-very-dark);margin-right:14px;">
       <span style="width:10px;height:10px;border-radius:50%;background:${DIM_COLOR[dim]};display:inline-block;"></span>${DIM_NAME[dim]}</span>`
   ).join("");
-  return `<div style="margin-bottom:6px;">${legend}</div>
-    <svg width="100%" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;">${grid}${threshold}${annotation}${lines}</svg>`;
+  return `${legend ? `<div style="margin-bottom:6px;">${legend}</div>` : ""}
+    <svg width="100%" viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio health over six weeks" style="width:100%;height:auto;display:block;">${grid}${threshold}${annotation}${lines}${xLabels}</svg>`;
 }
 
 // "Health trend" section for an item drawer.
@@ -604,11 +644,12 @@ function portfolioHistory(items) {
 // the action is raised (and when resolved) so the UI can show "did it improve?".
 const RAG_LABEL = { "on-track": "On Track", "at-risk": "At Risk", "critical": "Critical" };
 
-function pushAction(item, text, owner) {
+function pushAction(item, text, owner, dueDate) {
   item.actions = item.actions || [];
   const a = {
     id: "a" + Date.now() + Math.floor(Math.random() * 1000),
     text, owner,
+    dueDate: dueDate || "",
     created: new Date().toISOString().split("T")[0],
     status: "open",
     statusAtCreation: overallStatus(item),
@@ -635,7 +676,7 @@ function actionsSectionHTML(item, type) {
     <div style="display:flex;align-items:flex-start;gap:8px;background:#fff;border:1px solid var(--grey-light);border-left:3px solid #D4A017;border-radius:8px;padding:8px 10px;">
       <div style="flex:1;min-width:0;">
         <div style="font-size:0.83rem;color:var(--grey-very-dark);">${a.text}</div>
-        <div style="font-size:0.68rem;color:var(--grey-dark);margin-top:2px;">${a.owner} · raised ${a.created} · was ${RAG_LABEL[a.statusAtCreation] || "—"}</div>
+        <div style="font-size:0.68rem;color:var(--grey-dark);margin-top:2px;">${a.owner} · raised ${a.created}${a.dueDate ? ` · due ${a.dueDate}` : ""} · was ${RAG_LABEL[a.statusAtCreation] || "—"}</div>
       </div>
       <button onclick="resolveItemAction('${type}',${item.id},'${a.id}')" style="background:none;border:1px solid var(--grey-light);border-radius:50px;padding:2px 10px;font-size:0.7rem;color:var(--primary);cursor:pointer;white-space:nowrap;">Mark done</button>
     </div>`;

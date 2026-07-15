@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projects – Cognizant Project Health</title>
+  <title>Dashboard – Cognizant Project Health</title>
   <link href="vendor/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="cognizant-framework.css">
   <link rel="stylesheet" href="styles.css">
@@ -16,35 +16,38 @@
       Cognizant ProjectTracker
       <span class="alpha-pill">Alpha</span>
     </a>
+    <button class="mobile-nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" onclick="toggleMobileNav(this)">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-links d-none d-sm-flex">
       <a href="dashboard.html" class="nav-lnk active">Dashboard</a>
       <a href="projects.html" class="nav-lnk">Projects</a>
       <a href="teams.html"   class="nav-lnk">Teams</a>
       <a href="people.html"  class="nav-lnk">People</a>
       <a href="settings.html" class="nav-lnk">Settings</a>
-      <a href="index.html"   class="nav-ghost">Switch role ↗</a>
+      <a href="index.html"   class="nav-ghost">View as another role</a>
     </div>
   </nav>
 
   <!-- Page header (with summary strip) -->
-  <div class="page-header">
-    <div class="container py-4">
+  <div class="page-header dashboard-header">
+    <div class="container dashboard-header-inner">
       <div class="dash-hero">
         <div style="color: white;min-width:0;">
-          <h1 class="mb-1" id="dashTitle" style="font-size: 1.75rem;">Project Health Dashboard</h1>
-          <p class="mb-0" style="opacity: 0.6; font-size: 0.88rem;">
+          <h1 class="mb-1" id="dashTitle">Project Health Dashboard</h1>
+          <p class="mb-0 dashboard-updated">
             <span id="lastUpdatedLabel"></span>
           </p>
         </div>
         <div class="hero-actions" id="heroActions">
           <div class="hero-secondary" id="leadHeaderActions">
-            <button class="btn-add" onclick="openCheckinModal()">＋ Check in</button>
-            <button class="btn-hdr-ghost" onclick="openAddModal()">Add new</button>
-            <button class="btn-hdr-ghost" onclick="exportCSV()">Export CSV</button>
+            <button class="btn-add" onclick="openCheckinModal()">＋ Submit health update</button>
+            <button class="btn-hdr-ghost" onclick="openAddModal()">Add project or team</button>
+            <button class="btn-hdr-ghost" onclick="exportCSV()">Download report</button>
           </div>
         </div>
       </div>
-      <div id="summaryCards" class="mt-4"></div>
+      <div id="summaryCards" class="mt-3"></div>
     </div>
   </div>
 
@@ -59,14 +62,33 @@
     <!-- Manager focus list + portfolio trend, side by side on wide screens -->
     <div class="container mt-4">
       <div class="row g-3">
-        <div class="col-lg-7" id="attentionCol">
+        <div class="col-lg-6" id="attentionCol">
           <div id="attentionFeed"></div>
         </div>
-        <div class="col-lg-5" id="trendCol">
-          <div class="trend-panel">
-            <div class="section-title" style="margin-top:0;">Portfolio health trend</div>
+        <div class="col-lg-6" id="trendCol">
+          <div class="trend-panel dashboard-tile">
+            <div class="trend-panel-head">
+              <div>
+                <div class="dashboard-tile-title">Portfolio health trend</div>
+                <div class="dashboard-tile-subtitle" id="trendSubtitle">Average health across the project portfolio</div>
+              </div>
+              <span class="trend-period">Demo data · 6 weeks</span>
+            </div>
+            <div id="trendCurrent" class="trend-current" aria-label="Current portfolio health"></div>
             <div id="portfolioTrend" class="trend-chart-wrap"></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart nudges + open follow-ups -->
+    <div class="container mt-4">
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div id="smartNudges"></div>
+        </div>
+        <div class="col-lg-7">
+          <div id="followupTracker"></div>
         </div>
       </div>
     </div>
@@ -96,7 +118,7 @@
     <div class="drawer-footer">
       <button class="btn-delete" id="drawerDeleteBtn">Delete</button>
       <button class="btn-sm-outline" id="drawerEditBtn">Edit</button>
-      <button class="btn-sm-solid" id="drawerUpdateBtn">Check in</button>
+      <button class="btn-sm-solid" id="drawerUpdateBtn">Submit update</button>
     </div>
   </div>
 
@@ -107,7 +129,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header" style="background-color: var(--primary); color: white; border-radius: 12px 12px 0 0;">
-          <h5 class="modal-title" id="addModalTitle">Add new project</h5>
+          <h5 class="modal-title" id="addModalTitle">Add project</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4">
@@ -191,8 +213,8 @@
   </div>
 
   <!-- Check-in Modal -->
-  <div class="modal fade" id="checkinModal" tabindex="-1" aria-hidden="true" aria-label="Check in">
-    <div class="modal-dialog modal-dialog-centered">
+  <div class="modal fade" id="checkinModal" tabindex="-1" aria-hidden="true" aria-label="Submit health update">
+    <div class="modal-dialog modal-dialog-centered checkin-modal-dialog">
       <div class="modal-content">
         <div class="modal-header" style="background: linear-gradient(90deg, #2E308E, #2f78c4); color: white; border-radius: 12px 12px 0 0;">
           <div>
@@ -230,7 +252,47 @@
         </div>
         <div class="modal-footer" style="border-top: 1px solid var(--grey-light);">
           <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="checkinSubmitBtn" class="btn-primary-action" onclick="submitCheckin()" disabled>Submit check-in</button>
+          <button type="button" id="checkinSubmitBtn" class="btn-primary-action" onclick="submitCheckin()" disabled>Submit health update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Follow-up Modal -->
+  <div class="modal fade" id="followupModal" tabindex="-1" aria-hidden="true" aria-label="Create follow-up">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: var(--primary); color: white; border-radius: 12px 12px 0 0;">
+          <div>
+            <h5 class="modal-title mb-0">Create follow-up</h5>
+            <small style="opacity:0.72;">Turn a risk signal into a clear next action</small>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Project or team</label>
+            <select id="followupItem"></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Action needed</label>
+            <textarea id="followupText" rows="2" placeholder="e.g. Book a scope reset with delivery lead"></textarea>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-7">
+              <label class="form-label fw-bold">Owner</label>
+              <input id="followupOwner" type="text" placeholder="e.g. Alex Morgan">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-bold">Due date</label>
+              <input id="followupDue" type="date">
+            </div>
+          </div>
+          <div id="followupError" class="text-danger mt-2" style="font-size:0.82rem;display:none;"></div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--grey-light);">
+          <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-primary-action" onclick="submitFollowup()">Create follow-up</button>
         </div>
       </div>
     </div>

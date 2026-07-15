@@ -118,13 +118,14 @@ function persist() { saveData({ projects, teams, checkins }); }
       document.getElementById("summaryCards").innerHTML = `
         <div class="health-summary">
           ${items.map(({ key, label }) => `
-            <div class="hs-item py-2 ${activeStatusFilter === key && !isTimeline ? "hs-active" : ""}" ${isTimeline ? 'style="cursor:default;"' : 'onclick="toggleSummaryFilter(\''+key+'\')"'}>
+            <button type="button" class="hs-item py-1 ${activeStatusFilter === key && !isTimeline ? "hs-active" : ""}"
+                    ${isTimeline ? "disabled" : `onclick="toggleSummaryFilter('${key}')" aria-pressed="${activeStatusFilter === key}"`}>
               <div class="hs-light" style="background:${STATUS_COLOR[key]};color:${STATUS_COLOR[key]};"></div>
               <div class="hs-text">
                 <div class="hs-count" style="color:${STATUS_COLOR[key]};">${counts[key]}</div>
                 <div class="hs-label">${plural(counts[key])} ${label}</div>
               </div>
-            </div>`).join("")}
+            </button>`).join("")}
         </div>
         ${activeStatusFilter && !isTimeline ? `
         <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
@@ -203,8 +204,8 @@ function persist() { saveData({ projects, teams, checkins }); }
       const attentionCol = document.getElementById("attentionCol");
       const trendCol = document.getElementById("trendCol");
       if (attentionCol && trendCol) {
-        attentionCol.className = items.length ? "col-lg-7" : "d-none";
-        trendCol.className = items.length ? "col-lg-5" : "col-lg-12";
+        attentionCol.className = items.length ? "col-lg-6" : "d-none";
+        trendCol.className = items.length ? "col-lg-6" : "col-lg-12";
       }
 
       if (!items.length) {
@@ -212,13 +213,13 @@ function persist() { saveData({ projects, teams, checkins }); }
         return;
       }
       el.innerHTML = `
-        <div class="focus-panel">
+        <div class="focus-panel dashboard-tile">
           <div class="focus-head">
             <div>
-              <div class="section-title focus-title">Needs attention</div>
-              <div class="focus-sub">${items.length} item${items.length === 1 ? "" : "s"} with a risk signal or overdue update</div>
+              <div class="dashboard-tile-title">Needs attention</div>
+              <div class="dashboard-tile-subtitle">${items.length} project${items.length === 1 ? " or team" : "s and teams"} with a risk signal or overdue update</div>
             </div>
-            <button class="focus-clear" onclick="activeStatusFilter='';renderSummary(projects);renderAccounts();">Show all accounts</button>
+            <button class="focus-clear" onclick="activeStatusFilter='';renderSummary(projects);renderAccounts();">View account health</button>
           </div>
           <div class="focus-list">
             ${shown.map(a => {
@@ -227,8 +228,12 @@ function persist() { saveData({ projects, teams, checkins }); }
               const topReason = a.reasons.find(r => r.includes("critical"))
                 || a.reasons.find(r => r.includes("declining"))
                 || a.reasons[0];
+              const nextAction = attentionAction(a);
+              const nextClick = nextAction === "Create a follow-up"
+                ? `openFollowupModal('${a.type}',${a.id})`
+                : `openDetail(${a.id},'${a.type}')`;
               return `
-              <button class="focus-row" onclick="openDetail(${a.id},'${a.type}')" style="border-left-color:${SEV[a.severity]};">
+              <button class="focus-row" onclick="${nextClick}" style="border-left-color:${SEV[a.severity]};">
                 <span class="focus-priority" style="background:${SEV[a.severity]};">${SEV_LABEL[a.severity]}</span>
                 <span class="focus-main">
                   <span class="focus-name-line">
@@ -237,11 +242,11 @@ function persist() { saveData({ projects, teams, checkins }); }
                   </span>
                   <span class="focus-reason">${topReason}${a.reasons.length > 1 ? ` <span class="focus-reason-more">+${a.reasons.length - 1} more</span>` : ""}</span>
                 </span>
-                <span class="focus-next">${attentionAction(a)}</span>
+                <span class="focus-next">${nextAction}</span>
               </button>`;
             }).join("")}
           </div>
-          ${items.length > shown.length ? `<div class="focus-more">${items.length - shown.length} more item${items.length - shown.length === 1 ? "" : "s"} in the account list below</div>` : ""}
+          ${items.length > shown.length ? `<div class="focus-more">${items.length - shown.length} more ${items.length - shown.length === 1 ? "project or team" : "projects and teams"} in the account list below</div>` : ""}
         </div>`;
     }
 
@@ -265,18 +270,119 @@ function persist() { saveData({ projects, teams, checkins }); }
         const safeAcct = g.account.replace(/'/g, "\\'");
         return `
           <div class="acct-group">
-            <div class="acct-head" onclick="toggleAccount('${safeAcct}')" role="button" tabindex="0"
-                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccount('${safeAcct}')}"
-                 aria-expanded="${!collapsed}">
+            <button type="button" class="acct-head" onclick="toggleAccount('${safeAcct}')" aria-expanded="${!collapsed}">
               <span class="acct-caret ${collapsed ? "collapsed" : ""}">▾</span>
               <span class="acct-name">${g.account}</span>
               <span class="status-badge acct-badge" style="background:${STATUS_BG[g.overall]};color:${STATUS_TEXT[g.overall]};">${STATUS_LABEL[g.overall]}</span>
               <span class="acct-meta">${g.projects.length} project${g.projects.length > 1 ? "s" : ""} · ${g.counts["at-risk"]} at risk · ${g.counts.critical} critical${activeStatusFilter ? ` · ${shown.length} shown` : ""}</span>
-            </div>
+            </button>
             ${collapsed ? "" : `<div class="acct-body row g-3">${shown.map(p => renderCard(p, "project")).join("")}</div>`}
           </div>`;
       }).join("");
       el.innerHTML = html || `<div class="empty-state" style="padding:2rem 1rem;"><p style="font-size:0.9rem;margin:0;">No projects match this filter.</p></div>`;
+    }
+
+    function itemFor(type, id) {
+      return (type === "project" ? projects : teams).find(x => x.id === Number(id));
+    }
+
+    function collectFollowups() {
+      return [
+        ...projects.map(item => ({ item, type: "project" })),
+        ...teams.map(item => ({ item, type: "team" }))
+      ].flatMap(({ item, type }) => (item.actions || []).map(action => ({ item, type, action })));
+    }
+
+    function smartNudgeItems() {
+      const nudges = [];
+      const allItems = [
+        ...projects.map(item => ({ item, type: "project" })),
+        ...teams.map(item => ({ item, type: "team" }))
+      ];
+
+      allItems.forEach(({ item, type }) => {
+        const open = (item.actions || []).some(a => a.status !== "resolved");
+        const overall = overallStatus(item);
+        if (overall === "critical" && !open) {
+          nudges.push({ tone: "critical", title: "Create a follow-up", text: `${item.name} is critical and has no open action.`, type, id: item.id });
+        }
+        if (isStale(item)) {
+          nudges.push({ tone: "watch", title: "Ask for an update", text: `${item.name} has not had a recent health update.`, type, id: item.id });
+        }
+        DIMENSIONS.forEach(dim => {
+          const h = (item.history && item.history[dim]) || [];
+          if (h.length >= 2 && h[h.length - 1] < h[h.length - 2] - 8) {
+            nudges.push({ tone: "watch", title: "Review trend", text: `${dimDef(dim).short} is dropping on ${item.name}.`, type, id: item.id });
+          }
+        });
+      });
+
+      const openFollowups = collectFollowups().filter(x => x.action.status !== "resolved");
+      if (openFollowups.length) {
+        nudges.unshift({ tone: "info", title: "Follow-ups open", text: `${openFollowups.length} action${openFollowups.length === 1 ? "" : "s"} waiting for an owner update.` });
+      }
+
+      return nudges.slice(0, 4);
+    }
+
+    function renderSmartNudges() {
+      const el = document.getElementById("smartNudges");
+      if (!el) return;
+      const nudges = smartNudgeItems();
+      el.innerHTML = `
+        <div class="dashboard-tile insight-panel">
+          <div class="dashboard-tile-title">Smart nudges</div>
+          <div class="dashboard-tile-subtitle">Suggested next steps from the latest signals</div>
+          <div class="nudge-list">
+            ${nudges.length ? nudges.map(n => `
+              <button class="nudge-row nudge-${n.tone}" onclick="${n.type ? `openDetail(${n.id},'${n.type}')` : "document.getElementById('followupTracker').scrollIntoView({behavior:'smooth',block:'center'})"}">
+                <span class="nudge-dot"></span>
+                <span>
+                  <strong>${n.title}</strong>
+                  <small>${n.text}</small>
+                </span>
+              </button>`).join("") : `
+              <div class="nudge-empty">
+                <strong>No nudges right now</strong>
+                <small>The portfolio has no obvious next action.</small>
+              </div>`}
+          </div>
+        </div>`;
+    }
+
+    function renderFollowupTracker() {
+      const el = document.getElementById("followupTracker");
+      if (!el) return;
+      const open = collectFollowups()
+        .filter(x => x.action.status !== "resolved")
+        .sort((a, b) => (a.action.dueDate || "9999").localeCompare(b.action.dueDate || "9999"));
+      el.innerHTML = `
+        <div class="dashboard-tile followup-panel">
+          <div class="followup-head">
+            <div>
+              <div class="dashboard-tile-title">Open follow-ups</div>
+              <div class="dashboard-tile-subtitle">${open.length ? `${open.length} action${open.length === 1 ? "" : "s"} to close the loop` : "No open actions right now"}</div>
+            </div>
+            <button class="focus-clear" onclick="openFollowupModal()">Create follow-up</button>
+          </div>
+          <div class="followup-list">
+            ${open.length ? open.slice(0, 4).map(({ item, type, action }) => `
+              <div class="followup-row">
+                <div class="followup-main">
+                  <strong>${action.text}</strong>
+                  <small>${item.name} · ${action.owner || "Unassigned"}${action.dueDate ? ` · due ${formatDate(action.dueDate)}` : ""}</small>
+                </div>
+                <div class="followup-actions">
+                  <button onclick="openDetail(${item.id},'${type}')">Review</button>
+                  <button onclick="resolveTrackedAction('${type}',${item.id},'${action.id}')">Done</button>
+                </div>
+              </div>`).join("") : `
+              <div class="nudge-empty">
+                <strong>Nothing waiting</strong>
+                <small>Create a follow-up from a risk signal when a clear action is needed.</small>
+              </div>`}
+          </div>
+        </div>`;
     }
 
     // Role-aware: leads get the full portfolio dashboard, members get a
@@ -289,6 +395,8 @@ function persist() { saveData({ projects, teams, checkins }); }
       if (leadActions) leadActions.style.display = "";
       renderSummary(projects);
       renderAttention();
+      renderSmartNudges();
+      renderFollowupTracker();
       renderAccounts();
       renderEmptyState();
     }
@@ -339,7 +447,7 @@ function persist() { saveData({ projects, teams, checkins }); }
             <div class="mi-name">${it.name}</div>
             <div class="mi-meta">${type === "team" ? "Team" : "Project"} · ${last ? "your last check-in " + relativeDate(last.date) : "you haven't checked in yet"}</div>
           </div>
-          <button class="btn-add" onclick="openCheckinModal(${it.id},'${type}')">Check in</button>
+          <button class="btn-add" onclick="openCheckinModal(${it.id},'${type}')">Submit update</button>
         </div>`;
       }).join("");
 
@@ -349,7 +457,7 @@ function persist() { saveData({ projects, teams, checkins }); }
         <div class="member-hero">
           <h2>Hi ${firstName} 👋</h2>
           <p>Take a minute to share how your work is going. Your check-in helps your leads see where support is needed.</p>
-          <button class="btn-checkin-hero big" onclick="openCheckinModal()"><span class="cih-icon">＋</span> Submit a check-in</button>
+          <button class="btn-checkin-hero big" onclick="openCheckinModal()"><span class="cih-icon">＋</span> Submit health update</button>
           <a class="member-fullview" href="member.html">Open my full check-in view ↗</a>
         </div>
         <div class="section-title">Your projects &amp; teams</div>
@@ -501,6 +609,8 @@ function persist() { saveData({ projects, teams, checkins }); }
           <p style="font-size:0.85rem;color:var(--grey-very-dark);margin:0;">${item.notes}</p>
         </div>`;
 
+      body += detailTimelineHTML(item, type, key);
+
       if (type === "project" && item.milestones && item.milestones.length) {
         const done = item.milestones.filter(m => m.done).length;
         body += `<div class="section-title">Milestones — ${done}/${item.milestones.length} done</div>
@@ -566,6 +676,74 @@ function persist() { saveData({ projects, teams, checkins }); }
       document.getElementById("drawer").classList.add("open");
       document.getElementById("drawerBackdrop").classList.add("open");
       document.body.style.overflow = "hidden";
+    }
+
+    function detailTimelineHTML(item, type, key) {
+      const events = [];
+      if (item.updated) {
+        events.push({
+          date: item.updated,
+          label: "Health update",
+          text: `${STATUS_LABEL[overallStatus(item)]} overall after latest update`,
+          tone: overallStatus(item)
+        });
+      }
+      (item.actions || []).forEach(a => {
+        events.push({
+          date: a.created,
+          label: "Follow-up created",
+          text: a.text,
+          meta: `${a.owner || "Unassigned"}${a.dueDate ? ` · due ${formatDate(a.dueDate)}` : ""}`,
+          tone: "at-risk"
+        });
+        if (a.resolvedDate) {
+          events.push({
+            date: a.resolvedDate,
+            label: "Follow-up completed",
+            text: a.text,
+            meta: a.statusAtResolution ? `Resolved at ${STATUS_LABEL[a.statusAtResolution]}` : "",
+            tone: "on-track"
+          });
+        }
+      });
+      (checkins[key] || []).slice(0, 4).forEach(c => {
+        const f = checkinFeeling(c);
+        events.push({
+          date: c.date,
+          label: "Health update submitted",
+          text: c.note || `${CI_LABEL[f]} update from ${c.name || c.person || "Anonymous"}`,
+          meta: c.name || c.person || "Anonymous",
+          tone: ciToStatus(f)
+        });
+      });
+      if (type === "project") {
+        (item.milestones || []).forEach(m => {
+          events.push({
+            date: m.date,
+            label: m.done ? "Milestone completed" : "Milestone due",
+            text: m.label,
+            tone: m.done ? "on-track" : "at-risk"
+          });
+        });
+      }
+
+      events.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const rows = events.slice(0, 7).map(e => `
+        <div class="detail-timeline-row">
+          <span class="detail-timeline-dot" style="background:${STATUS_COLOR[e.tone] || STATUS_COLOR["at-risk"]};"></span>
+          <div>
+            <div class="detail-timeline-top">
+              <strong>${e.label}</strong>
+              <span>${formatDate(e.date)}</span>
+            </div>
+            <div class="detail-timeline-text">${e.text}</div>
+            ${e.meta ? `<div class="detail-timeline-meta">${e.meta}</div>` : ""}
+          </div>
+        </div>`).join("");
+
+      return `
+        <div class="section-title" style="margin-top:1.1rem;">Timeline</div>
+        <div class="detail-timeline">${rows}</div>`;
     }
 
     function closeDrawer() {
@@ -667,9 +845,53 @@ function persist() { saveData({ projects, teams, checkins }); }
       return `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${grid}${paths}${dots}${xLabels}${valueLabels}</svg>`;
     }
 
+    // A prototype-friendly six-week history that ends at the real current
+    // portfolio average. Small bumps keep it believable while the direction
+    // still reflects the risk-heavy sample portfolio.
+    function demoPortfolioHistory(items) {
+      const current = portfolioHistory(items);
+      const offsets = {
+        delivery:     [20, 17, 19, 13, 7, 0],
+        morale:       [9, 14, 10, 12, 5, 0],
+        satisfaction: [4, 2, 7, 3, -2, 0]
+      };
+      const out = {};
+      DIMENSIONS.forEach(dim => {
+        const values = current[dim] || [];
+        const latest = values.length ? values[values.length - 1] : 65;
+        out[dim] = (offsets[dim] || [15, 13, 14, 10, 5, 0])
+          .map(offset => Math.max(0, Math.min(100, latest + offset)));
+      });
+      return out;
+    }
+
     function initChart() {
       const el = document.getElementById("portfolioTrend");
-      if (el) el.innerHTML = trendChartHTML(portfolioHistory(projects));
+      const subtitle = document.getElementById("trendSubtitle");
+      const currentEl = document.getElementById("trendCurrent");
+      const history = demoPortfolioHistory(projects);
+      if (subtitle) {
+        subtitle.textContent = `Average health across ${projects.length} project${projects.length === 1 ? "" : "s"}`;
+      }
+      if (currentEl) {
+        currentEl.innerHTML = DIMENSIONS.map(dim => {
+          const values = history[dim] || [];
+          const value = values.length ? Math.round(values[values.length - 1]) : 0;
+          const state = value >= HEALTHY_SCORE ? "On track" : value >= 45 ? "At risk" : "Critical";
+          return `<div class="trend-current-item">
+            <span class="trend-current-dot" style="background:${DIM_COLOR[dim]};"></span>
+            <span class="trend-current-name">${DIM_NAME[dim]}</span>
+            <strong style="color:${DIM_COLOR[dim]};">${value}/100</strong>
+            <span class="trend-current-state">· ${state}</span>
+          </div>`;
+        }).join("");
+      }
+      if (el) {
+        el.innerHTML = trendChartHTML(history, {
+          labels: ["6w ago", "", "4w ago", "", "2w ago", "Now"],
+          showLegend: false
+        });
+      }
     }
     function updateChart() { initChart(); }
 
@@ -855,7 +1077,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       document.querySelectorAll(".add-type-btn").forEach(b => {
         b.classList.toggle("active", b.dataset.type === type);
       });
-      document.getElementById("addModalTitle").textContent = `Add new ${type}`;
+      document.getElementById("addModalTitle").textContent = `Add ${type}`;
       document.getElementById("addTypeLabelBtn").textContent = type;
     }
 
@@ -1113,6 +1335,8 @@ function persist() { saveData({ projects, teams, checkins }); }
       pushAction(item, text, CURRENT_USER);
       persist();
       openDetail(id, type);
+      renderSmartNudges();
+      renderFollowupTracker();
     }
     function resolveItemAction(type, id, actionId) {
       const item = (type === "project" ? projects : teams).find(x => x.id === id);
@@ -1120,6 +1344,57 @@ function persist() { saveData({ projects, teams, checkins }); }
       resolveAction(item, actionId);
       persist();
       openDetail(id, type);
+      renderSmartNudges();
+      renderFollowupTracker();
+    }
+
+    function resolveTrackedAction(type, id, actionId) {
+      const item = itemFor(type, id);
+      if (!item) return;
+      resolveAction(item, actionId);
+      persist();
+      renderView();
+      updateChart();
+      showToast("Follow-up marked done.");
+    }
+
+    function openFollowupModal(preType, preId) {
+      const modal = document.getElementById("followupModal");
+      const itemSelect = document.getElementById("followupItem");
+      const due = new Date(TODAY);
+      due.setDate(due.getDate() + 7);
+      itemSelect.innerHTML = [
+        ...projects.map(p => `<option value="project-${p.id}">${p.name}</option>`),
+        ...teams.map(t => `<option value="team-${t.id}">${t.name} (team)</option>`)
+      ].join("");
+      if (preType && preId) itemSelect.value = `${preType}-${preId}`;
+      document.getElementById("followupText").value = "";
+      document.getElementById("followupOwner").value = CURRENT_USER;
+      document.getElementById("followupDue").value = due.toISOString().split("T")[0];
+      document.getElementById("followupError").style.display = "none";
+      new bootstrap.Modal(modal).show();
+    }
+
+    function submitFollowup() {
+      const key = document.getElementById("followupItem").value;
+      const [type, id] = key.split("-");
+      const item = itemFor(type, id);
+      const text = document.getElementById("followupText").value.trim();
+      const owner = document.getElementById("followupOwner").value.trim() || CURRENT_USER;
+      const dueDate = document.getElementById("followupDue").value;
+      const err = document.getElementById("followupError");
+      if (!item || !text) {
+        err.textContent = "Add the action needed before creating the follow-up.";
+        err.style.display = "block";
+        return;
+      }
+      err.style.display = "none";
+      pushAction(item, text, owner, dueDate);
+      persist();
+      bootstrap.Modal.getInstance(document.getElementById("followupModal")).hide();
+      renderView();
+      updateChart();
+      showToast("Follow-up created.");
     }
 
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });

@@ -83,31 +83,41 @@ function loadPersisted() {
     }
     function worstSeverity(concerns) { return concerns.reduce((m, c) => Math.max(m, c.severity), 0); }
 
+    function rankedRosterPeople() {
+      return rosterPeople(projects, teams)
+        .map(person => ({ ...person, _severity: worstSeverity(personConcerns(person.name)) }))
+        .sort((a, b) => b._severity - a._severity || a.name.localeCompare(b.name));
+    }
+
     function renderRoster() {
       const el = document.getElementById("roster");
       // Roster leads with who most needs your attention (same triage principle
       // as the dashboard's "Needs attention" feed), not alphabetical order.
-      const people = rosterPeople(projects, teams)
-        .map(p => ({ ...p, _severity: worstSeverity(personConcerns(p.name)) }))
-        .sort((a, b) => b._severity - a._severity || a.name.localeCompare(b.name));
+      const people = rankedRosterPeople();
       const ACCENT = { 3: "#B81F2D", 2: "#D4A017" };
       el.innerHTML = people.map(p => {
         const wb = wellbeing[p.name];
         const lvl = wb ? wellbeingLevel(wb.level) : null;
         const active = selectedPerson === p.name;
         const accent = ACCENT[p._severity] || "transparent";
-        return `<div onclick="selectPerson('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 11px 9px 9px;border-radius:10px;border:1px solid ${active ? "var(--primary)" : "var(--grey-light)"};border-left:4px solid ${accent};background:${active ? "#f0f1f8" : "#fff"};margin-bottom:7px;">
+        return `<button type="button" class="roster-item" aria-pressed="${active}" onclick="selectPerson('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 11px 9px 9px;border-radius:10px;border:1px solid ${active ? "var(--primary)" : "var(--grey-light)"};border-left:4px solid ${accent};background:${active ? "#f0f1f8" : "#fff"};margin-bottom:7px;">
           <div class="avatar-sm" style="background:${avatarColor(p.name)};width:30px;height:30px;font-size:0.7rem;flex-shrink:0;">${initials(p.name)}</div>
           <div style="min-width:0;flex:1;">
             <div style="font-weight:600;font-size:0.84rem;color:var(--primary);">${p.name}</div>
             <div style="font-size:0.68rem;color:var(--grey-dark);">${p.roles.join(" · ")} · ${p.items.length} assignment${p.items.length === 1 ? "" : "s"}</div>
           </div>
           ${lvl ? `<span title="Capacity: ${lvl.label}" style="width:10px;height:10px;border-radius:50%;background:${lvl.color};flex-shrink:0;"></span>` : ""}
-        </div>`;
+        </button>`;
       }).join("");
     }
 
-    function selectPerson(name) { selectedPerson = name; render(); }
+    function selectPerson(name) {
+      selectedPerson = name;
+      render();
+      if (window.innerWidth < 768) {
+        setTimeout(() => document.getElementById("personDetailColumn")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+      }
+    }
 
     function renderDetail() {
       const el = document.getElementById("personDetail");
@@ -187,6 +197,6 @@ function loadPersisted() {
 
     // ── Init ──────────────────────────────────────────────────────────
     loadPersisted();
-    const _first = rosterPeople(projects, teams)[0];
+    const _first = rankedRosterPeople()[0];
     selectedPerson = _first ? _first.name : null;
     render();

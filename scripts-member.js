@@ -135,7 +135,6 @@ function persistShared() { saveData({ projects, teams, checkins }); }
     // rating dimensions; only one row is open at a time.
     function renderAccordionRow(item, type) {
       const key      = type + "-" + item.id;
-      const overall  = overallStatus(item);
       const expanded = expandedKey === key;
       const done     = isCompleted(key);
 
@@ -149,9 +148,6 @@ function persistShared() { saveData({ projects, teams, checkins }); }
               <div class="acc-name">${item.name}${done ? ` <span class="acc-done">✓ Checked in</span>` : ""}</div>
               <div class="acc-sub">${type === "team" ? "Team" : "Project"} · Led by ${item.lead}</div>
             </div>
-            <span class="status-label-sm" style="background:${STATUS_BG[overall]};color:${STATUS_TEXT[overall]};white-space:nowrap;">
-              ${STATUS_LABEL[overall]}
-            </span>
           </div>
           ${expanded ? `<div class="acc-body" id="checkinCard-${key}">${renderCheckinBody(item, type)}</div>` : ""}
         </div>`;
@@ -192,7 +188,7 @@ function persistShared() { saveData({ projects, teams, checkins }); }
           <div class="d-flex justify-content-end mt-2">
             <button onclick="submitVote('${key}','${type}',${item.id})"
               style="background:var(--primary);color:white;border:none;border-radius:50px;padding:7px 20px;font-size:0.82rem;font-weight:600;cursor:pointer;">
-              Submit check-in
+              Submit health update
             </button>
           </div>
         </div>
@@ -345,9 +341,8 @@ function persistShared() { saveData({ projects, teams, checkins }); }
       const total = mine.projects.length + mine.teams.length;
       const wb    = wellbeing[CURRENT_USER];
       const itemRow = (it, type) => {
-        const s = overallStatus(it);
         return `<div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--grey-very-dark);">
-          <span style="width:8px;height:8px;border-radius:50%;background:${STATUS_COLOR[s]};flex-shrink:0;"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:${type === "project" ? "var(--accent1-medium)" : "var(--accent3-dark)"};flex-shrink:0;"></span>
           ${it.name} <span style="font-size:0.7rem;color:var(--grey-dark);">· ${type}</span></div>`;
       };
       return `

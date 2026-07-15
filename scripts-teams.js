@@ -191,7 +191,6 @@ function persist() { saveData({ projects, teams, checkins }); }
             <div class="ci-bar-wrap"><div class="ci-bar-fill" style="width:${ciPct}%;"></div></div>
             <div style="font-size:0.65rem;color:var(--grey-dark);margin-top:2px;">${membersWithCI}/${t.people.length} members</div>
           </td>
-          <td class="hide-mobile">${healthSparkline(t)}</td>
           <td>
             <span style="${stale?"color:#D4A017;font-weight:600;":""}">${relativeDate(t.updated)}</span>
             ${stale?`<div style="font-size:0.68rem;color:#D4A017;cursor:pointer;" onclick="event.stopPropagation();openCheckinModal(${t.id})">⚠ Overdue update</div>`:""}
@@ -249,8 +248,9 @@ function persist() { saveData({ projects, teams, checkins }); }
       // Team wellbeing — each member + their last check-in
       body += `<div class="section-title">Team wellbeing (${t.people.length} members)</div>`;
       body += t.people.map(person => {
-        const personCI = (checkins[key]||[]).filter(c => c.person === person.name);
+        const personCI = (checkins[key]||[]).filter(c => (c.person || c.name) === person.name);
         const last = personCI[personCI.length-1];
+        const lastFeeling = checkinFeeling(last);
         return `<div class="person-row">
           <div class="avatar-md" style="background:${avatarColor(person.name)};">${initials(person.name)}</div>
           <div style="flex:1;min-width:0;">
@@ -259,7 +259,7 @@ function persist() { saveData({ projects, teams, checkins }); }
           </div>
           ${last
             ? `<div style="text-align:right;">
-                <span class="ci-bubble" style="background:${CI_BG[last.feeling]};color:${CI_TEXT[last.feeling]};">${CI_EMOJI[last.feeling]} ${CI_LABEL[last.feeling]}</span>
+                <span class="ci-bubble" style="background:${CI_BG[lastFeeling]};color:${CI_TEXT[lastFeeling]};">${CI_EMOJI[lastFeeling]} ${CI_LABEL[lastFeeling]}</span>
                 <div style="font-size:0.65rem;color:var(--grey-dark);margin-top:2px;">${relativeDate(last.date)}</div>
                </div>`
             : `<span style="font-size:0.7rem;color:var(--grey-dark);">No check-in yet</span>`}
@@ -276,15 +276,18 @@ function persist() { saveData({ projects, teams, checkins }); }
       if (allCI.length === 0) {
         body += `<p style="font-size:0.82rem;color:var(--grey-dark);text-align:center;padding:1rem 0;">No check-ins recorded yet.</p>`;
       } else {
-        body += allCI.map(c => `
+        body += allCI.map(c => {
+          const feeling = checkinFeeling(c);
+          return `
           <div class="checkin-item">
-            <span style="font-size:1.1rem;">${CI_EMOJI[c.feeling]}</span>
+            <span style="font-size:1.1rem;">${CI_EMOJI[feeling]}</span>
             <div>
-              <div style="font-size:0.8rem;font-weight:600;color:var(--grey-very-dark);">${c.person||"Anonymous"} — <span style="background:${CI_BG[c.feeling]};color:${CI_TEXT[c.feeling]};padding:1px 7px;border-radius:50px;font-size:0.7rem;">${CI_LABEL[c.feeling]}</span></div>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--grey-very-dark);">${c.person || c.name || "Anonymous"} — <span style="background:${CI_BG[feeling]};color:${CI_TEXT[feeling]};padding:1px 7px;border-radius:50px;font-size:0.7rem;">${CI_LABEL[feeling]}</span></div>
               ${c.note?`<div style="font-size:0.78rem;color:var(--grey-dark);margin-top:2px;">"${c.note}"</div>`:""}
               <div style="font-size:0.68rem;color:var(--grey-dark);margin-top:2px;">${formatDate(c.date)}${c.by ? ` · recorded by ${c.by}` : ""}</div>
             </div>
-          </div>`).join("");
+          </div>`;
+        }).join("");
       }
 
       document.getElementById("drawerBody").innerHTML = body;

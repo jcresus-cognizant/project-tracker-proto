@@ -22,7 +22,6 @@
               <span style="font-weight:700;color:var(--primary);font-size:0.9rem;">${d.label}</span>
               <span style="display:block;font-size:0.74rem;color:var(--grey-dark);">${d.hint}</span>
             </span>
-            ${on ? `<span style="font-size:0.7rem;font-weight:700;color:${d.color};">ON</span>` : ""}
           </label>`;
         }).join("")}
       </div>`;

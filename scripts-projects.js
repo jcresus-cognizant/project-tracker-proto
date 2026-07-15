@@ -39,7 +39,7 @@ function persist() { saveData({ projects, teams, checkins }); }
       return AVATAR_PALETTE[h];
     }
     function ragPill(label, s) {
-      return `<span class="rag-pill" style="background:${STATUS_BG[s]};color:${STATUS_TEXT[s]};"><span class="rag-dot" style="background:${STATUS_COLOR[s]};"></span>${label}</span>`;
+      return `<span class="rag-pill" title="${STATUS_LABEL[s]}" aria-label="${STATUS_LABEL[s]}" style="background:${STATUS_BG[s]};color:${STATUS_TEXT[s]};"><span class="rag-dot" style="background:${STATUS_COLOR[s]};"></span>${label || STATUS_LABEL[s]}</span>`;
     }
     function statusScore(s) { return s==="on-track"?90:s==="at-risk"?55:20; }
     function healthSparkline(item) {
@@ -186,7 +186,6 @@ function persist() { saveData({ projects, teams, checkins }); }
             ${total > 0 ? `<div style="font-size:0.78rem;font-weight:600;color:var(--primary);">${done}/${total} done</div>
             <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${progress}%;"></div></div>` : "<span style='color:var(--grey-dark);'>—</span>"}
           </td>
-          <td class="hide-mobile">${healthSparkline(p)}</td>
           <td class="hide-mobile">
             <span style="${overdue ? "color:#B81F2D;font-weight:600;" : ""}">${formatDate(p.end)}</span>
             ${overdue ? `<div style="font-size:0.68rem;color:#B81F2D;">Overdue</div>` : ""}
@@ -269,15 +268,16 @@ function persist() { saveData({ projects, teams, checkins }); }
       // People + check-in history
       body += `<div class="section-title">People (${p.people.length})</div>`;
       body += p.people.map(person => {
-        const personCheckins = (checkins[key] || []).filter(c => c.person === person.name);
+        const personCheckins = (checkins[key] || []).filter(c => (c.person || c.name) === person.name);
         const last = personCheckins[personCheckins.length - 1];
+        const lastFeeling = checkinFeeling(last);
         return `<div class="person-row">
           <div class="avatar-md" style="background:${avatarColor(person.name)};">${initials(person.name)}</div>
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:0.83rem;color:var(--primary);">${person.name}</div>
             <div style="font-size:0.7rem;color:var(--grey-dark);">${person.role}</div>
           </div>
-          ${last ? `<span class="ci-bubble" style="background:${CI_BG[last.feeling]};color:${CI_TEXT[last.feeling]};">${CI_EMOJI[last.feeling]} ${CI_LABEL[last.feeling]}</span>` : `<span style="font-size:0.7rem;color:var(--grey-dark);">No check-in</span>`}
+          ${last ? `<span class="ci-bubble" style="background:${CI_BG[lastFeeling]};color:${CI_TEXT[lastFeeling]};">${CI_EMOJI[lastFeeling]} ${CI_LABEL[lastFeeling]}</span>` : `<span style="font-size:0.7rem;color:var(--grey-dark);">No check-in</span>`}
         </div>`;
       }).join("");
 
@@ -291,15 +291,18 @@ function persist() { saveData({ projects, teams, checkins }); }
       if (allCI.length === 0) {
         body += `<p style="font-size:0.82rem;color:var(--grey-dark);text-align:center;padding:1rem 0;">No check-ins recorded yet.</p>`;
       } else {
-        body += allCI.map(c => `
+        body += allCI.map(c => {
+          const feeling = checkinFeeling(c);
+          return `
           <div class="checkin-item">
-            <span style="font-size:1.1rem;">${CI_EMOJI[c.feeling]}</span>
+            <span style="font-size:1.1rem;">${CI_EMOJI[feeling]}</span>
             <div>
-              <div style="font-size:0.8rem;font-weight:600;color:var(--grey-very-dark);">${c.person || "Anonymous"} — <span style="background:${CI_BG[c.feeling]};color:${CI_TEXT[c.feeling]};padding:1px 7px;border-radius:50px;font-size:0.7rem;">${CI_LABEL[c.feeling]}</span></div>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--grey-very-dark);">${c.person || c.name || "Anonymous"} — <span style="background:${CI_BG[feeling]};color:${CI_TEXT[feeling]};padding:1px 7px;border-radius:50px;font-size:0.7rem;">${CI_LABEL[feeling]}</span></div>
               ${c.note ? `<div style="font-size:0.78rem;color:var(--grey-dark);margin-top:2px;">"${c.note}"</div>` : ""}
               <div style="font-size:0.68rem;color:var(--grey-dark);margin-top:2px;">${formatDate(c.date)}${c.by ? ` · recorded by ${c.by}` : ""}</div>
             </div>
-          </div>`).join("");
+          </div>`;
+        }).join("");
       }
 
       document.getElementById("drawerBody").innerHTML = body;

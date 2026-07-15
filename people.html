@@ -16,13 +16,16 @@
       Cognizant ProjectTracker
       <span class="alpha-pill">Alpha</span>
     </a>
+    <button class="mobile-nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" onclick="toggleMobileNav(this)">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-links d-none d-sm-flex">
       <a href="dashboard.html" class="nav-lnk">Dashboard</a>
       <a href="projects.html" class="nav-lnk">Projects</a>
       <a href="teams.html"   class="nav-lnk">Teams</a>
       <a href="people.html"  class="nav-lnk active">People</a>
       <a href="settings.html" class="nav-lnk">Settings</a>
-      <a href="index.html"   class="nav-ghost">Switch role ↗</a>
+      <a href="index.html"   class="nav-ghost">View as another role</a>
     </div>
   </nav>
 
@@ -36,13 +39,13 @@
 
   <!-- Roster + detail -->
   <div class="container mt-4">
-    <div class="row g-3">
+    <div class="row g-3 people-layout">
       <div class="col-md-4">
         <div class="section-title" style="margin-top:0;color:var(--primary);">Team</div>
-        <p style="font-size:0.72rem;color:var(--grey-dark);margin:-0.5rem 0 0.75rem;">Sorted by who most needs your attention</p>
+        <p style="font-size:0.72rem;color:var(--grey-dark);margin:-0.5rem 0 0.75rem;">People with current risk signals appear first</p>
         <div id="roster"></div>
       </div>
-      <div class="col-md-8">
+      <div class="col-md-8" id="personDetailColumn">
         <div id="personDetail"></div>
       </div>
     </div>
