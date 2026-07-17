@@ -173,6 +173,9 @@ function persist() { saveData({ projects, teams, checkins }); }
             <div class="cell-lead">${p.lead}</div>
           </td>
           <td class="hide-mobile">
+            <div style="font-weight: 500; color: var(--grey-very-dark);">${p.account || 'Unassigned'}</div>
+          </td>
+          <td class="hide-mobile">
             <span class="status-badge" style="background:${STATUS_BG[overall]};color:${STATUS_TEXT[overall]};">${STATUS_LABEL[overall]}</span>
           </td>
           <td class="hide-mobile">${ragPill("", p.delivery)}</td>
@@ -193,14 +196,6 @@ function persist() { saveData({ projects, teams, checkins }); }
           <td>
             <span style="${stale ? "color:#D4A017;font-weight:600;" : ""}">${relativeDate(p.updated)}</span>
             ${stale ? `<div style="font-size:0.68rem;color:#D4A017;cursor:pointer;" onclick="event.stopPropagation();openCheckinModal(${p.id})">⚠ Overdue update</div>` : ""}
-          </td>
-          <td class="actions" onclick="event.stopPropagation()">
-            <button class="action-btn" title="Edit" onclick="openEditModal(${p.id})">
-              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-            </button>
-            <button class="action-btn" title="Update status" onclick="openCheckinModal(${p.id})">
-              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"/></svg>
-            </button>
           </td>
         </tr>`;
       }).join("");
@@ -224,45 +219,17 @@ function persist() { saveData({ projects, teams, checkins }); }
 
       document.getElementById("drawerTitle").textContent = p.name;
       document.getElementById("drawerBadge").innerHTML =
-        `<span class="status-badge" style="background:rgba(255,255,255,0.18);color:white;font-size:0.75rem;">${STATUS_LABEL[overall]}</span>`;
-
-      // RAG cards
-      const dims = DIMENSIONS.map(d => [d, dimLabel(d)]);
-      let body = `<div class="row g-2 mb-1">
-        ${dims.map(([d,label]) => `
-          <div class="col-4">
-            <div class="dim-card" style="background:${STATUS_BG[p[d]]};">
-              <div style="width:10px;height:10px;border-radius:50%;background:${STATUS_COLOR[p[d]]};margin:0 auto 4px;"></div>
-              <div style="font-size:0.72rem;font-weight:700;color:${STATUS_TEXT[p[d]]};">${STATUS_LABEL[p[d]]}</div>
-              <div style="font-size:0.62rem;color:var(--grey-very-dark);margin-top:1px;">${label}</div>
-            </div>
-          </div>`).join("")}
-      </div>`;
-
-      // Notes
-      if (p.notes) body += `
-        <div class="p-3 rounded-3 my-3" style="background:var(--grey-very-light);border-left:3px solid var(--accent2-dark);">
-          <div style="font-size:0.7rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Notes</div>
-          <p style="font-size:0.85rem;color:var(--grey-very-dark);margin:0;">${p.notes}</p>
+        `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="status-badge" style="background:rgba(255,255,255,0.18);color:white;font-size:0.75rem;">${STATUS_LABEL[overall]}</span>
+          <span style="font-size:0.72rem;opacity:0.75;">Project · Led by ${p.lead}</span>
+          <a href="detail.html?type=project&id=${id}"
+            style="font-size:0.72rem;color:rgba(255,255,255,0.85);text-decoration:none;border:1px solid rgba(255,255,255,0.35);border-radius:50px;padding:1px 9px;white-space:nowrap;">View details ↗</a>
         </div>`;
 
-      // Milestone progress
-      if (p.milestones && p.milestones.length) {
-        const done = p.milestones.filter(m=>m.done).length;
-        body += `<div class="section-title">Milestones — ${done}/${p.milestones.length} done</div>
-          <div class="d-flex flex-column gap-1 mb-1">
-            ${p.milestones.map(m => `
-              <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;padding:4px 0;">
-                <span style="width:14px;height:14px;border-radius:50%;flex-shrink:0;background:${m.done ? "var(--primary)" : "var(--grey-light)"};display:inline-flex;align-items:center;justify-content:center;">
-                  ${m.done ? `<svg width="8" height="8" fill="white" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.5" fill="none"/></svg>` : ""}
-                </span>
-                <span style="flex:1;${m.done ? "color:var(--grey-dark);text-decoration:line-through;" : "color:var(--grey-very-dark);"}">${m.label}</span>
-                <span style="font-size:0.7rem;color:var(--grey-dark);">${formatDate(m.date)}</span>
-              </div>`).join("")}
-          </div>`;
-      }
+      // Removed RAG cards and notes
+      let body = ``;
 
-      body += itemTrendHTML(p);
+      // Less details: Removed milestones and trend chart from drawer
       body += actionsSectionHTML(p, "project");
 
       // People + check-in history
@@ -308,7 +275,6 @@ function persist() { saveData({ projects, teams, checkins }); }
       document.getElementById("drawerBody").innerHTML = body;
 
       document.getElementById("drawerDeleteBtn").onclick = () => deleteProject(id);
-      document.getElementById("drawerEditBtn").onclick   = () => { closeDrawer(); setTimeout(() => openEditModal(id), 50); };
       document.getElementById("drawerUpdateBtn").onclick = () => { closeDrawer(); setTimeout(() => openCheckinModal(id), 50); };
 
       // Highlight active row
@@ -604,9 +570,6 @@ function persist() { saveData({ projects, teams, checkins }); }
       const th = e.target && e.target.closest ? e.target.closest('.tbl thead th[role="button"]') : null;
       if (th && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); th.click(); }
     });
-    loadPersisted();
-    renderTable();
-    renderPeopleDatalist();
     // Open drawer if arriving from dashboard deep-link
     try {
       const pending = sessionStorage.getItem("openDrawer");
@@ -616,3 +579,172 @@ function persist() { saveData({ projects, teams, checkins }); }
         if (type === "project") setTimeout(() => openDrawer(id), 150);
       }
     } catch(e) {}
+
+    // ── View Mode & Account Rollup ───────────────────────────────────────────
+    let currentViewMode = "list"; // 'list' | 'grouped'
+    let activeStatusFilter = "";
+    let collapsedAccounts = {};
+    let currentView = "projects";
+
+    function switchView(mode) {
+      currentViewMode = mode;
+      
+      const listBtn = document.getElementById("viewListBtn");
+      const groupBtn = document.getElementById("viewGroupedBtn");
+      const listContainer = document.getElementById("listViewContainer");
+      const groupContainer = document.getElementById("groupedViewContainer");
+      const tableToolbar = document.getElementById("tableToolbar");
+
+      if (mode === "list") {
+        listBtn.style.background = "white";
+        listBtn.style.border = "1px solid var(--grey-light)";
+        listBtn.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+        listBtn.style.color = "var(--primary)";
+        
+        groupBtn.style.background = "transparent";
+        groupBtn.style.border = "1px solid transparent";
+        groupBtn.style.boxShadow = "none";
+        groupBtn.style.color = "var(--grey-dark)";
+
+        listContainer.style.display = "";
+        groupContainer.style.display = "none";
+        tableToolbar.style.display = "flex";
+        
+        renderTable();
+      } else {
+        groupBtn.style.background = "white";
+        groupBtn.style.border = "1px solid var(--grey-light)";
+        groupBtn.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+        groupBtn.style.color = "var(--primary)";
+        
+        listBtn.style.background = "transparent";
+        listBtn.style.border = "1px solid transparent";
+        listBtn.style.boxShadow = "none";
+        listBtn.style.color = "var(--grey-dark)";
+
+        listContainer.style.display = "none";
+        groupContainer.style.display = "block";
+        tableToolbar.style.display = "none";
+
+        renderSummary(projects);
+        renderAccounts();
+      }
+    }
+
+    function toggleSummaryFilter(key) {
+      activeStatusFilter = activeStatusFilter === key ? "" : key;
+      renderSummary(projects);
+      renderAccounts();
+    }
+
+    function renderSummary(data) {
+      const counts = { "on-track": 0, "at-risk": 0, "critical": 0 };
+      data.forEach(item => counts[overallStatus(item)]++);
+      const unit = currentView === "teams" ? "team" : "project";
+      const plural = n => n === 1 ? unit : unit + "s";
+      const isTimeline = currentView === "timeline";
+
+      // Last updated label
+      const latestIso = data.reduce((best, i) => i.updated > best ? i.updated : best, "0000");
+      const updatedEl = document.getElementById("lastUpdatedLabel");
+      if (updatedEl) {
+        updatedEl.textContent = latestIso !== "0000" ? `· Last updated ${relativeDate(latestIso)}` : "";
+      }
+
+      const items = [
+        { key: "on-track", label: "on track"           },
+        { key: "at-risk",  label: "need attention"      },
+        { key: "critical", label: "need urgent action"  }
+      ];
+
+      const summaryEl = document.getElementById("summaryCards");
+      if (summaryEl) {
+        summaryEl.innerHTML = `
+          <div class="summary-metrics-row d-flex flex-wrap gap-2">
+            ${items.map(({ key, label }) => {
+              const num = counts[key];
+              const verbLabel = (num === 1 && key !== "on-track") ? label.replace("need", "needs") : label;
+              return `
+              <button type="button" class="sm-item d-flex align-items-center gap-2 ${activeStatusFilter === key && !isTimeline ? "sm-active" : ""}"
+                      style="background:white;border:1px solid ${activeStatusFilter === key ? STATUS_COLOR[key] : 'var(--grey-light)'};border-radius:50px;padding:4px 12px;color:var(--grey-very-dark);cursor:pointer;font-family:inherit;transition:all 0.15s;box-shadow:${activeStatusFilter === key ? '0 0 0 1px '+STATUS_COLOR[key] : 'none'};"
+                      ${isTimeline ? "disabled" : `onclick="toggleSummaryFilter('${activeStatusFilter === key ? "" : key}')" aria-pressed="${activeStatusFilter === key}"`}>
+                <div class="sm-light" style="width:10px;height:10px;border-radius:50%;background:${STATUS_COLOR[key]};"></div>
+                <div class="sm-text" style="font-size:0.75rem;">
+                  <strong style="color:${STATUS_COLOR[key]};font-size:0.85rem;">${num}</strong> ${plural(num)} ${verbLabel}
+                </div>
+                ${activeStatusFilter === key && !isTimeline ? `<span style="margin-left:4px;font-size:1.1rem;line-height:1;color:${STATUS_COLOR[key]};">&times;</span>` : ""}
+              </button>`;
+            }).join("")}
+          </div>`;
+      }
+    }
+
+    function toggleAccount(account) {
+      collapsedAccounts[account] = !collapsedAccounts[account];
+      renderAccounts();
+    }
+
+    function renderAccounts() {
+      const el = document.getElementById("accountGroups");
+      if (!el) return;
+      const html = accountRollup(projects).map(g => {
+        const shown = g.projects.filter(p => !activeStatusFilter || overallStatus(p) === activeStatusFilter);
+        if (activeStatusFilter && shown.length === 0) return ""; // nothing matches the filter here
+        const collapsed = !!collapsedAccounts[g.account];
+        const safeAcct = g.account.replace(/'/g, "\\'");
+        return `
+          <div class="acct-group">
+            <button type="button" class="acct-head" onclick="toggleAccount('${safeAcct}')" aria-expanded="${!collapsed}">
+              <span class="acct-caret ${collapsed ? "collapsed" : ""}">▾</span>
+              <span class="acct-name">${g.account}</span>
+              <span class="status-badge acct-badge" style="background:${STATUS_BG[g.overall]};color:${STATUS_TEXT[g.overall]};">${STATUS_LABEL[g.overall]}</span>
+              <span class="acct-meta">${g.projects.length} project${g.projects.length > 1 ? "s" : ""} · ${g.counts["at-risk"]} at risk · ${g.counts.critical} critical${activeStatusFilter ? ` · ${shown.length} shown` : ""}</span>
+            </button>
+            ${collapsed ? "" : `<div class="acct-body row g-3">${shown.map(p => renderCard(p, "project")).join("")}</div>`}
+          </div>`;
+      }).join("");
+      el.innerHTML = html || `<div class="empty-state" style="padding:2rem 1rem;"><p style="font-size:0.9rem;margin:0;">No projects match this filter.</p></div>`;
+    }
+
+    function renderCard(item, type) {
+      const overall = overallStatus(item);
+      const stale   = isStale(item);
+      const meta    = type === "team" ? `${item.people.length} members` : `${item.people.length} people`;
+
+      return `
+        <div class="col-md-6 col-lg-4 health-card">
+          <div class="card h-100" style="border-radius:12px;cursor:pointer;background:white;" onclick="openDrawer(${item.id})">
+            <div class="card-body p-4 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div style="min-width:0;">
+                  <h5 class="card-title mb-0" style="color:var(--primary);font-weight:700;font-size:0.97rem;line-height:1.3;">${item.name}</h5>
+                  <small class="text-muted">${meta}</small>
+                </div>
+                <span class="status-badge ms-2 flex-shrink-0" style="background:${STATUS_BG[overall]};color:${STATUS_TEXT[overall]};">${STATUS_LABEL[overall]}</span>
+              </div>
+
+              <div class="d-flex gap-2 flex-wrap mt-3 mb-2">
+                ${ragPill("Delivery", item.delivery)}
+                ${ragPill("Morale", item.morale)}
+                ${ragPill("Satisfaction", item.satisfaction)}
+              </div>
+
+              <div class="d-flex align-items-center gap-2 mb-3">
+                ${avatarStackSmall(item.people)}
+                <small class="text-muted ms-1" style="font-size:0.72rem;">Led by ${item.lead}</small>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mt-auto pt-2" style="border-top:1px solid var(--grey-light);">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <small class="text-muted">Updated ${relativeDate(item.updated)}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ── Initialization ────────────────────────────────────────────────────────
+    loadPersisted();
+    switchView('list');
+    renderPeopleDatalist();

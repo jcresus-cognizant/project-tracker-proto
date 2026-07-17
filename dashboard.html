@@ -35,19 +35,17 @@
       <div class="dash-hero">
         <div style="color: white;min-width:0;">
           <h1 class="mb-1" id="dashTitle">Project Health Dashboard</h1>
-          <p class="mb-0 dashboard-updated">
+          <p class="mb-0 dashboard-updated" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <span id="lastUpdatedLabel"></span>
           </p>
         </div>
         <div class="hero-actions" id="heroActions">
           <div class="hero-secondary" id="leadHeaderActions">
-            <button class="btn-add" onclick="openCheckinModal()">＋ Submit health update</button>
-            <button class="btn-hdr-ghost" onclick="openAddModal()">Add project or team</button>
+            <button class="btn-add" onclick="openCheckinModal()" style="padding: 0.45rem 1rem; margin-right: 0.5rem;">＋ Submit health update</button>
             <button class="btn-hdr-ghost" onclick="exportCSV()">Download report</button>
           </div>
         </div>
       </div>
-      <div id="summaryCards" class="mt-3"></div>
     </div>
   </div>
 
@@ -60,43 +58,22 @@
     <div class="container mt-4"><div id="emptyState"></div></div>
 
     <!-- Manager focus list + portfolio trend, side by side on wide screens -->
-    <div class="container mt-4">
+    <div class="container mt-4 mb-4">
       <div class="row g-3">
-        <div class="col-lg-6" id="attentionCol">
+        <div class="col-lg-5" id="attentionCol">
           <div id="attentionFeed"></div>
         </div>
-        <div class="col-lg-6" id="trendCol">
-          <div class="trend-panel dashboard-tile">
-            <div class="trend-panel-head">
-              <div>
-                <div class="dashboard-tile-title">Portfolio health trend</div>
-                <div class="dashboard-tile-subtitle" id="trendSubtitle">Average health across the project portfolio</div>
-              </div>
-              <span class="trend-period">Demo data · 6 weeks</span>
+        <div class="col-lg-7" id="trendCol">
+          <div class="row g-3">
+            <div class="col-12">
+              <div id="keyProjects"></div>
             </div>
-            <div id="trendCurrent" class="trend-current" aria-label="Current portfolio health"></div>
-            <div id="portfolioTrend" class="trend-chart-wrap"></div>
+            <div class="col-12">
+              <div id="followupTracker"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Smart nudges + open follow-ups -->
-    <div class="container mt-4">
-      <div class="row g-3">
-        <div class="col-lg-5">
-          <div id="smartNudges"></div>
-        </div>
-        <div class="col-lg-7">
-          <div id="followupTracker"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Health by account (collapsible groups with nested project cards) -->
-    <div class="container mt-4">
-      <div class="section-title" style="margin-top:0;color:var(--primary);">Health by account</div>
-      <div id="accountGroups"></div>
     </div>
 
     <div class="mb-5"></div>
@@ -115,9 +92,10 @@
       <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">✕</button>
     </div>
     <div class="drawer-body" id="drawerBody"></div>
-    <div class="drawer-footer">
-      <button class="btn-delete" id="drawerDeleteBtn">Delete</button>
-      <button class="btn-sm-outline" id="drawerEditBtn">Edit</button>
+    <div class="drawer-footer" style="justify-content: space-between;">
+      <button id="drawerDeleteBtn" title="Delete" style="background:transparent; border:none; padding:4px; color:var(--grey-dark); cursor:pointer;">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </button>
       <button class="btn-sm-solid" id="drawerUpdateBtn">Submit update</button>
     </div>
   </div>

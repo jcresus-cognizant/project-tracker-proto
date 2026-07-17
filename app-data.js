@@ -553,6 +553,13 @@ function trendChartHTML(history, options) {
       `<text x="${dx.toFixed(1)}" y="${(PAD.t + 7).toFixed(1)}" font-size="8.5" fill="#B81F2D" text-anchor="${labelAnchor}" font-family="sans-serif" font-weight="700">▼ ${DIM_NAME[drop.dim]} ${Math.round(drop.delta)}</text>`;
   }
 
+  const areas = series.map(s => {
+    if (s.pts.length < 2) return "";
+    const coords = s.pts.map((v, i) => `${xAt(i, s.pts.length).toFixed(1)},${yAt(v).toFixed(1)}`).join(" ");
+    const areaCoords = `${coords} ${xAt(s.pts.length - 1, s.pts.length).toFixed(1)},${H - PAD.b} ${xAt(0, s.pts.length).toFixed(1)},${H - PAD.b}`;
+    return `<polygon points="${areaCoords}" fill="${DIM_COLOR[s.dim]}" opacity="0.08"/>`;
+  }).join("");
+
   const lines = series.map(s => {
     if (s.pts.length < 2) return "";
     const coords = s.pts.map((v, i) => `${xAt(i, s.pts.length).toFixed(1)},${yAt(v).toFixed(1)}`).join(" ");
@@ -569,7 +576,7 @@ function trendChartHTML(history, options) {
       <span style="width:10px;height:10px;border-radius:50%;background:${DIM_COLOR[dim]};display:inline-block;"></span>${DIM_NAME[dim]}</span>`
   ).join("");
   return `${legend ? `<div style="margin-bottom:6px;">${legend}</div>` : ""}
-    <svg width="100%" viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio health over six weeks" style="width:100%;height:auto;display:block;">${grid}${threshold}${annotation}${lines}${xLabels}</svg>`;
+    <svg width="100%" viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio health over six weeks" style="width:100%;height:auto;display:block;">${grid}${areas}${threshold}${annotation}${lines}${xLabels}</svg>`;
 }
 
 // "Health trend" section for an item drawer.

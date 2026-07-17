@@ -90,9 +90,9 @@ function listPageModalsHTML(cfg) {
                 <small class="text-muted">${hint}</small>
               </div>
               <div class="d-flex gap-2">
-                <button class="ci-btn" data-field="${field}" data-val="good"       onclick="setCi('${field}','good')">Good</button>
-                <button class="ci-btn" data-field="${field}" data-val="okay"       onclick="setCi('${field}','okay')">Okay</button>
-                <button class="ci-btn" data-field="${field}" data-val="struggling" onclick="setCi('${field}','struggling')">Struggling</button>
+                <button class="ci-btn" data-field="${field}" data-val="good"       onclick="setCi('${field}','good')"><span class="ci-dot ci-dot-good"></span>Good</button>
+                <button class="ci-btn" data-field="${field}" data-val="okay"       onclick="setCi('${field}','okay')"><span class="ci-dot ci-dot-okay"></span>Okay</button>
+                <button class="ci-btn" data-field="${field}" data-val="struggling" onclick="setCi('${field}','struggling')"><span class="ci-dot ci-dot-struggling"></span>Struggling</button>
               </div>
             </div>`;
 

@@ -195,14 +195,6 @@ function persist() { saveData({ projects, teams, checkins }); }
             <span style="${stale?"color:#D4A017;font-weight:600;":""}">${relativeDate(t.updated)}</span>
             ${stale?`<div style="font-size:0.68rem;color:#D4A017;cursor:pointer;" onclick="event.stopPropagation();openCheckinModal(${t.id})">⚠ Overdue update</div>`:""}
           </td>
-          <td class="actions" onclick="event.stopPropagation()">
-            <button class="action-btn" title="Edit" onclick="openEditModal(${t.id})">
-              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-            </button>
-            <button class="action-btn" title="Update status" onclick="openCheckinModal(${t.id})">
-              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"/></svg>
-            </button>
-          </td>
         </tr>`;
       }).join("");
     }
@@ -222,27 +214,17 @@ function persist() { saveData({ projects, teams, checkins }); }
 
       document.getElementById("drawerTitle").textContent = t.name;
       document.getElementById("drawerBadge").innerHTML =
-        `<span class="status-badge" style="background:rgba(255,255,255,0.18);color:white;font-size:0.75rem;">${STATUS_LABEL[overall]}</span>`;
-
-      const dims = DIMENSIONS.map(d => [d, dimLabel(d)]);
-      let body = `<div class="row g-2 mb-1">
-        ${dims.map(([d,label]) => `
-          <div class="col-4">
-            <div class="dim-card" style="background:${STATUS_BG[t[d]]};">
-              <div style="width:10px;height:10px;border-radius:50%;background:${STATUS_COLOR[t[d]]};margin:0 auto 4px;"></div>
-              <div style="font-size:0.72rem;font-weight:700;color:${STATUS_TEXT[t[d]]};">${STATUS_LABEL[t[d]]}</div>
-              <div style="font-size:0.62rem;color:var(--grey-very-dark);margin-top:1px;">${label}</div>
-            </div>
-          </div>`).join("")}
-      </div>`;
-
-      if (t.notes) body += `
-        <div class="p-3 rounded-3 my-3" style="background:var(--grey-very-light);border-left:3px solid var(--accent2-dark);">
-          <div style="font-size:0.7rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Notes</div>
-          <p style="font-size:0.85rem;color:var(--grey-very-dark);margin:0;">${t.notes}</p>
+        `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="status-badge" style="background:rgba(255,255,255,0.18);color:white;font-size:0.75rem;">${STATUS_LABEL[overall]}</span>
+          <span style="font-size:0.72rem;opacity:0.75;">Team · Led by ${t.lead}</span>
+          <a href="detail.html?type=team&id=${id}"
+            style="font-size:0.72rem;color:rgba(255,255,255,0.85);text-decoration:none;border:1px solid rgba(255,255,255,0.35);border-radius:50px;padding:1px 9px;white-space:nowrap;">View details ↗</a>
         </div>`;
 
-      body += itemTrendHTML(t);
+      // Removed RAG cards and notes
+      let body = ``;
+
+      // Removed itemTrendHTML to reduce details
       body += actionsSectionHTML(t, "team");
 
       // Team wellbeing — each member + their last check-in
@@ -292,7 +274,6 @@ function persist() { saveData({ projects, teams, checkins }); }
 
       document.getElementById("drawerBody").innerHTML = body;
       document.getElementById("drawerDeleteBtn").onclick = () => deleteTeam(id);
-      document.getElementById("drawerEditBtn").onclick   = () => { closeDrawer(); setTimeout(()=>openEditModal(id),50); };
       document.getElementById("drawerUpdateBtn").onclick = () => { closeDrawer(); setTimeout(()=>openCheckinModal(id),50); };
 
       // Highlight active row

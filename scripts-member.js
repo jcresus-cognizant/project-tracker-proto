@@ -71,14 +71,18 @@ function persistShared() { saveData({ projects, teams, checkins }); }
     // ── App state ─────────────────────────────────────────────────────
     let selectedVotes = {}; // { "project-1": { delivery, morale, satisfaction }, ... }
     let wellbeing = {};     // { "Alex Morgan": { level, date }, ... } — private capacity flags
-    let expandedKey = null; // accordion: only one project/team open at a time
+    let currentWizardStep = 0; // index of the active project/team in the wizard
     let sessionSubmitted = new Set(); // keys checked in during this visit
 
     // An item counts as "completed" once the current user has a check-in on it
     // (either from a previous visit or submitted just now).
     function isCompleted(key) {
       if (sessionSubmitted.has(key)) return true;
-      return (checkins[key] || []).some(e => entryPerson(e) === CURRENT_USER);
+      const myCheckins = (checkins[key] || []).filter(e => entryPerson(e) === CURRENT_USER);
+      if (myCheckins.length === 0) return false;
+      const lastCI = myCheckins[myCheckins.length - 1];
+      const daysSince = (Date.now() - new Date(lastCI.date)) / 86400000;
+      return daysSince < 7; // Resets weekly
     }
 
     // ── Routing ───────────────────────────────────────────────────────
@@ -120,37 +124,63 @@ function persistShared() { saveData({ projects, teams, checkins }); }
             <div class="cp-bar"><div class="cp-fill" style="width:${pct}%;"></div></div>
           </div>
 
-          <!-- Accordion of projects & teams -->
-          <div class="section-label">Your projects &amp; teams</div>
-          <div class="acc-list">
-            ${items.length
-              ? items.map(({ it, type }) => renderAccordionRow(it, type)).join("")
-              : `<p style="color:var(--grey-dark);font-size:0.85rem;">You're not assigned to any projects or teams yet.</p>`}
+          <!-- Wizard Check-in flow -->
+          <div class="section-label mt-4">Your check-ins</div>
+          <div class="wizard-container bg-white p-4" style="border-radius:16px; border:1px solid var(--grey-light); box-shadow:0 4px 12px rgba(0,0,0,0.03);">
+            ${items.length === 0 
+              ? `<p style="color:var(--grey-dark);font-size:0.85rem;margin:0;">You're not assigned to any projects or teams yet.</p>`
+              : renderWizardStep(items)
+            }
           </div>
 
         </div>`;
     }
 
-    // One collapsed row per project/team. Clicking expands it to reveal the
-    // rating dimensions; only one row is open at a time.
-    function renderAccordionRow(item, type) {
-      const key      = type + "-" + item.id;
-      const expanded = expandedKey === key;
-      const done     = isCompleted(key);
+    function renderWizardStep(items) {
+      if (currentWizardStep >= items.length) {
+        return `
+          <div style="text-align:center; padding: 2rem 0;">
+            <div style="font-size:3rem; margin-bottom:1rem;">🎉</div>
+            <h4 style="color:var(--primary); font-weight:800;">You're all caught up!</h4>
+            <p style="color:var(--grey-very-dark);">Thanks for sharing your updates. Your lead appreciates it.</p>
+            <button onclick="currentWizardStep=0; renderMemberDashboard();" class="btn-sm-outline mt-3">Review my check-ins</button>
+          </div>`;
+      }
+      
+      const { it, type } = items[currentWizardStep];
+      const key  = type + "-" + it.id;
+      const done = isCompleted(key);
 
       return `
-        <div class="acc-item ${expanded ? "open" : ""}">
-          <div class="acc-head" role="button" tabindex="0" aria-expanded="${expanded}"
-               onclick="toggleAccordion('${key}')"
-               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion('${key}')}">
-            <span class="acc-caret ${expanded ? "" : "collapsed"}">▾</span>
-            <div class="acc-main">
-              <div class="acc-name">${item.name}${done ? ` <span class="acc-done">✓ Checked in</span>` : ""}</div>
-              <div class="acc-sub">${type === "team" ? "Team" : "Project"} · Led by ${item.lead}</div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span style="font-size:0.75rem; font-weight:700; color:var(--grey-dark); text-transform:uppercase; letter-spacing:0.5px;">
+            Step ${currentWizardStep + 1} of ${items.length}
+          </span>
+          ${currentWizardStep < items.length - 1 ? `<button onclick="nextWizardStep()" class="btn btn-link btn-sm text-decoration-none" style="font-size:0.8rem;">Skip for now</button>` : ""}
+        </div>
+        
+        <div class="mb-4">
+          <h3 style="margin:0 0 4px; font-weight:800; font-size:1.3rem; color:var(--primary);">${it.name}</h3>
+          <div style="font-size:0.85rem; color:var(--grey-very-dark);">${type === "team" ? "Team" : "Project"} · Led by ${it.lead}</div>
+        </div>
+        
+        <div id="checkinCard-${key}">
+          ${done ? `
+            <div style="background:var(--grey-very-light); border-radius:12px; padding:1.5rem; text-align:center;">
+              <span style="font-size:1.2rem;">✅</span>
+              <p style="margin:8px 0 0; font-weight:600; color:var(--grey-very-dark);">You've already checked in here.</p>
             </div>
-          </div>
-          ${expanded ? `<div class="acc-body" id="checkinCard-${key}">${renderCheckinBody(item, type)}</div>` : ""}
-        </div>`;
+            <div class="d-flex justify-content-end mt-4">
+              <button onclick="nextWizardStep()" class="btn-primary-action">Next item ➔</button>
+            </div>
+          ` : renderCheckinBody(it, type)}
+        </div>
+      `;
+    }
+
+    function nextWizardStep() {
+      currentWizardStep++;
+      renderMemberDashboard();
     }
 
     // The rating UI shown inside an expanded accordion row.
@@ -159,10 +189,24 @@ function persistShared() { saveData({ projects, teams, checkins }); }
       const votes     = selectedVotes[key] || {};
       const allChosen = DIMENSIONS.every(d => votes[d]);
 
+      const myCheckins = (checkins[key] || []).filter(e => entryPerson(e) === CURRENT_USER);
+      let historyText = "";
+      if (myCheckins.length > 0) {
+        const lastCI = myCheckins[myCheckins.length - 1];
+        const parts = DIMENSIONS.map(d => lastCI[d] ? `${dimLabel(d)} was ${CI_EMOJI[lastCI[d]]} ${CI_LABEL[lastCI[d]]}` : null).filter(Boolean);
+        if (parts.length > 0) {
+          historyText = `<div style="background:var(--grey-very-light); padding:10px 12px; border-radius:8px; font-size:0.8rem; color:var(--grey-very-dark); margin-bottom:1rem; border:1px dashed #ccc;">
+            <strong style="color:var(--primary);">💡 Last time (${relativeDate(lastCI.date)}), you said:</strong><br>
+            <span style="opacity:0.85;">${parts.join(" · ")}</span>
+          </div>`;
+        }
+      }
+
       return `
         <p style="font-size:0.82rem;color:var(--grey-very-dark);margin-bottom:0.85rem;">
           How is this ${type === "team" ? "team" : "project"} going right now? Rate each area.
         </p>
+        ${historyText}
         <div class="d-flex flex-column gap-3 mb-3">
           ${DIMENSIONS.map(dim => `
             <div data-dim="${dim}">
@@ -186,8 +230,7 @@ function persistShared() { saveData({ projects, teams, checkins }); }
           <textarea id="noteInput-${key}" rows="2" placeholder="What's changed since last time? (optional)"
             style="width:100%;border-radius:10px;border:1px solid var(--grey-light);padding:0.6rem 0.85rem;font-size:0.85rem;resize:none;"></textarea>
           <div class="d-flex justify-content-end mt-2">
-            <button onclick="submitVote('${key}','${type}',${item.id})"
-              style="background:var(--primary);color:white;border:none;border-radius:50px;padding:7px 20px;font-size:0.82rem;font-weight:600;cursor:pointer;">
+            <button onclick="submitVote('${key}','${type}',${item.id})" class="btn-primary-action">
               Submit health update
             </button>
           </div>
@@ -198,10 +241,7 @@ function persistShared() { saveData({ projects, teams, checkins }); }
         </div>`;
     }
 
-    function toggleAccordion(key) {
-      expandedKey = (expandedKey === key) ? null : key;
-      renderMemberDashboard();
-    }
+    // (toggleAccordion removed)
 
     function renderProjectCard(item, type, myName) {
       const overall = overallStatus(item);
@@ -331,7 +371,7 @@ function persistShared() { saveData({ projects, teams, checkins }); }
 
       sessionSubmitted.add(key);   // counts toward the progress indicator
       delete selectedVotes[key];
-      setTimeout(() => { expandedKey = null; renderMemberDashboard(); }, 1000);
+      setTimeout(() => { nextWizardStep(); }, 1000);
     }
 
 
